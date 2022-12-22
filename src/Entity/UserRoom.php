@@ -6,6 +6,7 @@ use App\Repository\UserRoomRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRoomRepository::class)]
 class UserRoom
@@ -21,6 +22,7 @@ class UserRoom
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Ignore] // TODO: use groups
     private ?Room $room = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

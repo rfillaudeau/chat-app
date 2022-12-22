@@ -12,7 +12,7 @@ class RoomDto
 
     #[Assert\All([
         new Assert\NotBlank,
-        new UsernameExists()
+        new UsernameExists
     ])]
     #[Assert\Count(min: 1)]
     public array $users = [];

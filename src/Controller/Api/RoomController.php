@@ -6,6 +6,7 @@ use App\Dto\RoomDto;
 use App\Entity\Room;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\RoomVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -65,6 +66,14 @@ class RoomController extends AbstractController
         $this->entityManager->persist($room);
         $this->entityManager->flush();
 
-        return $this->json(null, Response::HTTP_CREATED);
+        return $this->json($room, Response::HTTP_CREATED);
+    }
+
+    #[Route('/{id}', name: 'read', requirements: ['id' => '\d+'], methods: [Request::METHOD_GET])]
+    public function read(Room $room): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(RoomVoter::VIEW, $room);
+
+        return $this->json($room);
     }
 }

@@ -47,7 +47,7 @@ class Room
     }
 
     /**
-     * @return Collection<User>
+     * @return Collection<UserRoom>
      */
     public function getUsers(): Collection
     {
