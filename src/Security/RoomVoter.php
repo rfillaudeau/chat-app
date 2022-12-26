@@ -4,17 +4,20 @@ namespace App\Security;
 
 use App\Entity\Room;
 use App\Entity\User;
+use LogicException;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class RoomVoter extends Voter
 {
-    const VIEW = 'view';
-    const EDIT = 'edit';
+    const READ = 'read';
+    const UPDATE = 'update';
+    const DELETE = 'delete';
+    const CREATE_MESSAGE = 'create_message';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, [self::VIEW, self::EDIT])) {
+        if (!in_array($attribute, [self::READ, self::UPDATE, self::DELETE])) {
             return false;
         }
 
@@ -38,9 +41,10 @@ class RoomVoter extends Voter
         }
 
         return match($attribute) {
-            self::VIEW => $this->canView($subject, $user),
-//            self::EDIT => $this->canEdit($subject, $user),
-            default => throw new \LogicException('This code should not be reached!')
+            self::READ, self::CREATE_MESSAGE => $this->canView($subject, $user),
+            self::UPDATE => $this->canUpdate($subject, $user),
+            self::DELETE => $this->canDelete($subject, $user),
+            default => throw new LogicException('This code should not be reached!')
         };
     }
 
@@ -55,9 +59,13 @@ class RoomVoter extends Voter
         return false;
     }
 
-//    private function canEdit(Room $room, User $user): bool
-//    {
-//        // this assumes that the Post object has a `getOwner()` method
-//        return $user === $post->getOwner();
-//    }
+    private function canUpdate(Room $room, User $user): bool
+    {
+        return $this->canView($room, $user);
+    }
+
+    private function canDelete(Room $room, User $user): bool
+    {
+        return $this->canView($room, $user);
+    }
 }

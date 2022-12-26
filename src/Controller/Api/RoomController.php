@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Dto\RoomDto;
 use App\Entity\Room;
 use App\Entity\User;
+use App\Repository\RoomRepository;
 use App\Repository\UserRepository;
 use App\Security\RoomVoter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,12 +48,14 @@ class RoomController extends AbstractController
             JsonEncoder::FORMAT
         );
 
+        // TODO
+        // Remove the current user from users
+        // Or require 2 users in users (one must be the logged user)
+
         $errors = $this->validator->validate($roomDto);
         if (count($errors) > 0) {
             throw new ValidationFailedException($roomDto, $errors);
         }
-
-        dump($roomDto);
 
         $room = (new Room())->setName($roomDto->name);
         $room->addUser($this->getUser());
@@ -60,8 +63,6 @@ class RoomController extends AbstractController
         foreach ($roomDto->users as $username) {
             $room->addUser($userRepository->findOneByUsername($username));
         }
-
-        dump($room);
 
         $this->entityManager->persist($room);
         $this->entityManager->flush();
@@ -72,8 +73,86 @@ class RoomController extends AbstractController
     #[Route('/{id}', name: 'read', requirements: ['id' => '\d+'], methods: [Request::METHOD_GET])]
     public function read(Room $room): JsonResponse
     {
-        $this->denyAccessUnlessGranted(RoomVoter::VIEW, $room);
+        $this->denyAccessUnlessGranted(RoomVoter::READ, $room);
 
         return $this->json($room);
+    }
+
+    #[Route('', name: 'read_all', methods: [Request::METHOD_GET])]
+    public function readAll(RoomRepository $repository): JsonResponse
+    {
+        $rooms = $repository->findByUser($this->getUser());
+
+        return $this->json($rooms);
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: [Request::METHOD_PUT])]
+    public function update(
+        Request $request,
+        Room $room,
+        UserRepository $userRepository
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(RoomVoter::UPDATE, $room);
+
+        /** @var RoomDto $roomDto */
+        $roomDto = $this->serializer->deserialize(
+            $request->getContent(),
+            RoomDto::class,
+            JsonEncoder::FORMAT
+        );
+
+        $errors = $this->validator->validate($roomDto);
+        if (count($errors) > 0) {
+            throw new ValidationFailedException($roomDto, $errors);
+        }
+
+        $room->setName($roomDto->name);
+
+        $usersToRemove = [];
+        foreach ($room->getUsers() as $userRoom) {
+            if ($userRoom->getUser() === $this->getUser()) {
+                continue;
+            }
+
+            $usersToRemove[] = $userRoom->getUser();
+        }
+
+        $usersToAdd = [$this->getUser()];
+        foreach ($roomDto->users as $username) {
+            $user = $userRepository->findOneByUsername($username);
+            $userIndex = array_search($user, $usersToRemove);
+            if ($userIndex === false) {
+                $usersToAdd[] = $user;
+            } else {
+                unset($usersToRemove[$userIndex]);
+            }
+        }
+
+        foreach ($usersToAdd as $user) {
+            $room->addUser($user);
+        }
+
+        foreach ($usersToRemove as $user) {
+            $room->removeUser($user);
+        }
+
+        $this->entityManager->flush();
+
+        return $this->json($room);
+    }
+
+    #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: [Request::METHOD_DELETE])]
+    public function delete(Room $room): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(RoomVoter::DELETE, $room);
+
+        $this->entityManager->remove($room);
+        $this->entityManager->flush();
+
+        return $this->json(null);
     }
 }

@@ -76,4 +76,18 @@ class SecurityController extends AbstractController
     {
         throw new LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
+
+    #[Route(
+        path: '/api/{routeName}',
+        name: 'api_not_found',
+        defaults: ['routeName' => null],
+        priority: -1
+    )]
+    public function notFound(?string $routeName): JsonResponse
+    {
+        return $this->json(
+            sprintf('Route "/api/%s" not found.', $routeName),
+            Response::HTTP_NOT_FOUND
+        );
+    }
 }

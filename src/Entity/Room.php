@@ -21,7 +21,13 @@ class Room
     /**
      * @var ArrayCollection|Collection|UserRoom[]
      */
-    #[ORM\OneToMany(mappedBy: 'room', targetEntity: UserRoom::class, cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        mappedBy: 'room',
+        targetEntity: UserRoom::class,
+        cascade: ['persist'],
+//        fetch: 'EXTRA_LAZY',
+        orphanRemoval: true
+    )]
     private Collection|ArrayCollection|array $users;
 
     public function __construct()
@@ -75,6 +81,7 @@ class Room
         for ($i = 0; $i < $this->users->count(); $i++) {
             if ($this->users[$i]->getUser() === $user) {
                 $userIndex = $i;
+                break;
             }
         }
 
@@ -84,5 +91,16 @@ class Room
 
         $this->users[$i]->setRoom(null);
         $this->users->remove($userIndex);
+    }
+
+    public function findUser(User $user): ?UserRoom
+    {
+        foreach ($this->users as $userRoom) {
+            if ($userRoom->getUser() === $user) {
+                return $userRoom;
+            }
+        }
+
+        return null;
     }
 }

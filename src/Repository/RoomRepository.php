@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Room;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,22 +22,20 @@ class RoomRepository extends ServiceEntityRepository
         parent::__construct($registry, Room::class);
     }
 
-    public function save(Room $entity, bool $flush = false): void
+    /**
+     * @param User $user
+     * @return Room[]
+     */
+    public function findByUser(User $user): array
     {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(Room $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        return $this->createQueryBuilder('r')
+            ->innerJoin('r.users', 'u')
+            ->andWhere('u.user = :user')
+            ->setParameter('user', $user)
+//            ->orderBy('r.', 'DESC')
+//            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
     }
 
 //    /**

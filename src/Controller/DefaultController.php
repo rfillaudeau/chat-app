@@ -13,7 +13,7 @@ class DefaultController extends AbstractController
         name: 'app_index',
         requirements: ['reactRouting' => '.+'],
         defaults: ['reactRouting' => null],
-        priority: '-1'
+        priority: -1
     )]
     public function index(): Response
     {
