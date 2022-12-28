@@ -1,2 +1,21 @@
+# Symfony
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+/vendor/
+
+# PHPUnit
+/phpunit.xml
+.phpunit.result.cache
+
+# Symfony Webpack Encore
+/node_modules/
+/public/build/
+npm-debug.log
+yarn-error.log
+
 # Docker
-/mysql
+/docker/mysql
