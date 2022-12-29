@@ -29,7 +29,8 @@ class RoomController extends AbstractController
         private readonly SerializerInterface $serializer,
         private readonly ValidatorInterface $validator,
         private readonly EntityManagerInterface $entityManager
-    ) {
+    )
+    {
     }
 
     /**
@@ -39,7 +40,8 @@ class RoomController extends AbstractController
     public function create(
         Request $request,
         UserRepository $userRepository
-    ): JsonResponse {
+    ): JsonResponse
+    {
         /** @var RoomDto $roomDto */
         $roomDto = $this->serializer->deserialize(
             $request->getContent(),
@@ -93,7 +95,8 @@ class RoomController extends AbstractController
         Request $request,
         Room $room,
         UserRepository $userRepository
-    ): JsonResponse {
+    ): JsonResponse
+    {
         $this->denyAccessUnlessGranted(RoomVoter::UPDATE, $room);
 
         /** @var RoomDto $roomDto */
