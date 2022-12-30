@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Message;
 use App\Entity\Room;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -29,9 +30,23 @@ class MessageRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->andWhere('m.room = :room')
-            ->setParameter('room', $room)
             ->orderBy('m.createdAt', 'ASC')
+            ->setParameter('room', $room)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @throws NonUniqueResultException
+     */
+    public function findLastInRoom(Room $room): ?Message
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.room = :room')
+            ->orderBy('m.createdAt', 'DESC')
+            ->setParameter('room', $room)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

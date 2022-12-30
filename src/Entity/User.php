@@ -6,22 +6,27 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const GROUP_DEFAULT = 'default';
     public const ROLE_USER = 'ROLE_USER';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?string $email = null;
 
     #[ORM\Column(length: 30, unique: true)]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?string $username = null;
 
     #[ORM\Column]
@@ -68,7 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Ignore]
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
     /**

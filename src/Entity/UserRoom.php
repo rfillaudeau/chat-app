@@ -6,11 +6,14 @@ use App\Repository\UserRoomRepository;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 
 #[ORM\Entity(repositoryClass: UserRoomRepository::class)]
 class UserRoom
 {
+    public const GROUP_DEFAULT = 'default';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -18,14 +21,16 @@ class UserRoom
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?User $user = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     #[Ignore] // TODO: use groups
     private ?Room $room = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups([self::GROUP_DEFAULT])]
     private DateTime $createdAt;
 
     public function __construct()

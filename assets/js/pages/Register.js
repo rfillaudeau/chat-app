@@ -1,8 +1,10 @@
 import React, {useRef, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import axios from "axios"
+import {useUser} from "../contexts/UserContext"
 
 function Register() {
+    const {currentUser} = useUser()
     const [inputs, setInputs] = useState({
         email: "",
         username: "",
@@ -12,6 +14,12 @@ function Register() {
     const [error, setError] = useState(null)
     const submitButtonRef = useRef(null)
     const navigate = useNavigate()
+
+    useEffect(() => {
+        if (currentUser !== null) {
+            navigate("/")
+        }
+    }, [])
 
     function handleChange(event) {
         const {name, value} = event.target
@@ -65,7 +73,7 @@ function Register() {
         <div className="flex justify-center py-12 px-4 text-zinc-200">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
-                    <i className="bi bi-chat-dots text-6xl text-zinc-500" />
+                    <i className="bi bi-chat-dots text-6xl text-zinc-500"/>
 
                     <h2 className="mt-6 text-3xl font-bold tracking-tight">
                         Create a new account

@@ -6,16 +6,22 @@ use App\Repository\RoomRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {
+    public const GROUP_DEFAULT = 'default';
+    public const GROUP_WITH_LAST_MESSAGE = 'room:with_last_message';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups([self::GROUP_DEFAULT])]
     private ?string $name = null;
 
     /**
@@ -28,6 +34,7 @@ class Room
 //        fetch: 'EXTRA_LAZY',
         orphanRemoval: true
     )]
+    #[Groups([self::GROUP_DEFAULT])]
     private Collection|ArrayCollection|array $users;
 
     public function __construct()

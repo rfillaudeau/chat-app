@@ -24,8 +24,6 @@
 				const link = '{{ app.request.attributes.get('_links').getLinksbyRel('mercure')[0].getHref }}'
 				const user = JSON.parse('{{ user|raw }}')
 
-				console.log(user === null)
-
 				document.mercureLink = link
 				document.user = user
 			</script>

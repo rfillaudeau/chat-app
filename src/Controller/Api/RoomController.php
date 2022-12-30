@@ -17,6 +17,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -26,8 +27,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RoomController extends AbstractController
 {
     public function __construct(
-        private readonly SerializerInterface $serializer,
-        private readonly ValidatorInterface $validator,
+        private readonly SerializerInterface    $serializer,
+        private readonly ValidatorInterface     $validator,
         private readonly EntityManagerInterface $entityManager
     )
     {
@@ -38,7 +39,7 @@ class RoomController extends AbstractController
      */
     #[Route('', name: 'create', methods: [Request::METHOD_POST])]
     public function create(
-        Request $request,
+        Request        $request,
         UserRepository $userRepository
     ): JsonResponse
     {
@@ -84,7 +85,12 @@ class RoomController extends AbstractController
     {
         $rooms = $repository->findByUser($this->getUser());
 
-        return $this->json($rooms);
+        return $this->json($rooms, Response::HTTP_OK, [], [
+            AbstractNormalizer::GROUPS => [
+                Room::GROUP_DEFAULT,
+                Room::GROUP_WITH_LAST_MESSAGE
+            ]
+        ]);
     }
 
     /**
@@ -92,8 +98,8 @@ class RoomController extends AbstractController
      */
     #[Route('/{id}', name: 'update', requirements: ['id' => '\d+'], methods: [Request::METHOD_PUT])]
     public function update(
-        Request $request,
-        Room $room,
+        Request        $request,
+        Room           $room,
         UserRepository $userRepository
     ): JsonResponse
     {
