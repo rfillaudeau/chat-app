@@ -8,6 +8,8 @@ import RoomCard from "./RoomCard"
 function SideBar({currentRoomId}) {
     const {currentUser} = useUser()
     const [rooms, setRooms] = useState([])
+    const [roomsToDisplay, setRoomsToDisplay] = useState([])
+    const [searchRoom, setSearchRoom] = useState("")
 
     useEffect(() => {
         if (currentUser === null) {
@@ -19,8 +21,6 @@ function SideBar({currentRoomId}) {
         axios.get("/api/rooms", {
             signal: controller.signal
         }).then(response => {
-            console.log(response)
-
             setRooms(response.data)
         }).catch(error => {
             if (error instanceof CanceledError) {
@@ -33,11 +33,33 @@ function SideBar({currentRoomId}) {
         return () => controller.abort()
     }, [currentUser])
 
+    useEffect(() => {
+        const searchQuery = searchRoom
+            .split(" ")
+            .map(q => q.trim().toLowerCase())
+            .filter(q => q.length > 0)
+
+        setRoomsToDisplay(rooms.filter(room => {
+            if (searchQuery.length === 0) {
+                return true
+            }
+
+            const name = room.name.toLowerCase()
+            for (const query of searchQuery) {
+                if (name.includes(query)) {
+                    return true
+                }
+            }
+
+            return false
+        }))
+    }, [rooms, searchRoom])
+
     if (currentUser === null) {
         return
     }
 
-    const roomElements = rooms.map((room, index) => (
+    const roomElements = roomsToDisplay.map((room, index) => (
         <RoomCard key={index} room={room} isSelected={room.id === currentRoomId}/>
     ))
 
@@ -58,6 +80,8 @@ function SideBar({currentRoomId}) {
                 type="text"
                 className="rounded-2xl bg-zinc-700 px-3 py-2 text-sm text-zinc-400 border-transparent focus:border-transparent focus:ring-0 placeholder:text-zinc-500"
                 placeholder="Search a room..."
+                value={searchRoom}
+                onChange={e => setSearchRoom(e.target.value)}
             />
 
             <div

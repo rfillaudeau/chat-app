@@ -2,13 +2,12 @@ import React, {useEffect, useRef, useState} from "react"
 import {useUser} from "../../../contexts/UserContext"
 import axios, {CanceledError} from "axios"
 import Message from "./Message"
+import MessageForm from "./MessageForm"
 
 function RoomContainer({currentRoomId}) {
     const {currentUser} = useUser()
     const [rawMessages, setRawMessages] = useState([])
     const [formattedMessages, setFormattedMessages] = useState([])
-    const submitButtonRef = useRef(null)
-    const newMessageInputRef = useRef(null)
     const messagesBottomRef = useRef(null)
 
     useEffect(() => {
@@ -21,8 +20,6 @@ function RoomContainer({currentRoomId}) {
         axios.get(`/api/rooms/${currentRoomId}/messages`, {
             signal: controller.signal
         }).then(response => {
-            console.log(response.data)
-
             setRawMessages(response.data)
         }).catch(error => {
             if (error instanceof CanceledError) {
@@ -41,22 +38,15 @@ function RoomContainer({currentRoomId}) {
         }
 
         const hub = new URL(document.mercureLink)
-
         hub.searchParams.append("topic", `rooms/${currentRoomId}`)
 
         // Subscribe to updates
         const eventSource = new EventSource(hub)
         eventSource.onmessage = event => {
-            const message = JSON.parse(event.data)
-
-            setRawMessages(prevMessages => [...prevMessages, message])
+            addRawMessage(JSON.parse(event.data))
         }
 
-        return () => {
-            console.log("Event source closed")
-
-            eventSource.close()
-        }
+        return () => eventSource.close()
     }, [currentUser, currentRoomId])
 
     useEffect(() => {
@@ -84,14 +74,6 @@ function RoomContainer({currentRoomId}) {
         setFormattedMessages(messages)
     }, [rawMessages])
 
-    useEffect(() => {
-        if (newMessageInputRef.current === null) {
-            return
-        }
-
-        newMessageInputRef.current.value = ""
-    }, [currentRoomId])
-
     if (currentUser === null || currentRoomId === null) {
         return
     }
@@ -100,24 +82,14 @@ function RoomContainer({currentRoomId}) {
         <Message key={index} message={message}/>
     ))
 
-    function handleSendMessage(event) {
-        event.preventDefault()
+    function addRawMessage(newMessage) {
+        setRawMessages(prevMessages => {
+            let messages = [...prevMessages]
+            if (messages.find(m => m.id === newMessage.id) == null) {
+                messages.push(newMessage)
+            }
 
-        const text = newMessageInputRef.current.value
-        if (text.length === 0) {
-            return
-        }
-
-        submitButtonRef.current.disabled = true
-
-        axios.post(`/api/rooms/${currentRoomId}/messages`, {text}).then(response => {
-            console.log(response)
-        }).catch(error => {
-            console.error(error)
-        }).finally(() => {
-            newMessageInputRef.current.value = ""
-
-            submitButtonRef.current.disabled = false
+            return messages
         })
     }
 
@@ -145,25 +117,7 @@ function RoomContainer({currentRoomId}) {
                 <div ref={messagesBottomRef}></div>
             </div>
 
-            <form
-                className="flex items-center bg-zinc-800 px-4 py-2 rounded-2xl space-x-4"
-                onSubmit={handleSendMessage}
-            >
-                <input
-                    type="text"
-                    className="grow text-sm px-0 py-2 bg-transparent border-transparent focus:border-transparent focus:ring-0 placeholder:text-zinc-500"
-                    placeholder="Write a message..."
-                    ref={newMessageInputRef}
-                />
-
-                <button
-                    type="submit"
-                    className="text-center rounded-md bg-zinc-600 px-4 py-2 text-sm hover:bg-zinc-500"
-                    ref={submitButtonRef}
-                >
-                    <i className="bi bi-send-fill"/>
-                </button>
-            </form>
+            <MessageForm currentRoomId={currentRoomId} onMessageSent={message => addRawMessage(message)}/>
         </div>
     )
 }

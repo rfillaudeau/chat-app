@@ -11,10 +11,15 @@ function Message({message}) {
         const seconds = diff / 1000
         const minutes = seconds / 60
         const hours = minutes / 60
+        const days = hours / 24
 
         const formatter = new Intl.RelativeTimeFormat("en-US", {
             numeric: "auto",
         })
+
+        if (days <= -1) {
+            return formatter.format(Math.round(days), "day")
+        }
 
         if (hours <= -1) {
             return formatter.format(Math.round(hours), "hour")
