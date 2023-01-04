@@ -1,5 +1,6 @@
 import React, {Fragment, useState} from "react"
 import {Dialog, Transition} from "@headlessui/react"
+import RoomForm from "../pages/Main/components/RoomForm"
 
 function RoomFormModal() {
     let [isOpen, setIsOpen] = useState(false)
@@ -52,27 +53,22 @@ function RoomFormModal() {
                                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl text-zinc-200 bg-zinc-800 p-6 text-left align-middle shadow-xl transition-all">
                                     <Dialog.Title
                                         as="h3"
-                                        className="text-lg font-medium leading-6"
+                                        className="text-lg font-medium leading-6 mb-3"
                                     >
-                                        Payment successful
+                                        Create a new room
                                     </Dialog.Title>
 
-                                    <div className="mt-2">
-                                        <p className="text-sm text-zinc-400">
-                                            Your payment has been successfully submitted. We’ve sent
-                                            you an email with all of the details of your order.
-                                        </p>
-                                    </div>
+                                    <RoomForm/>
 
-                                    <div className="mt-4">
-                                        <button
-                                            type="button"
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"
-                                            onClick={closeModal}
-                                        >
-                                            Got it, thanks!
-                                        </button>
-                                    </div>
+                                    {/*<div className="mt-4">*/}
+                                    {/*    <button*/}
+                                    {/*        type="button"*/}
+                                    {/*        className="inline-flex justify-center rounded-md border border-transparent bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 focus-visible:ring-offset-2"*/}
+                                    {/*        onClick={closeModal}*/}
+                                    {/*    >*/}
+                                    {/*        Got it, thanks!*/}
+                                    {/*    </button>*/}
+                                    {/*</div>*/}
                                 </Dialog.Panel>
                             </Transition.Child>
                         </div>

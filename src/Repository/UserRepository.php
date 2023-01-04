@@ -34,28 +34,24 @@ class UserRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-//    /**
-//     * @return User[] Returns an array of User objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('u.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * @param string $searchQuery
+     * @param User[]|array $exclude
+     * @return User[]|array
+     */
+    public function searchByUsernameOrEmail(string $searchQuery, array $exclude = []): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->andWhere('u.username LIKE :query')
+            ->orWhere('u.email LIKE :query')
+            ->setParameter('query', '%' . $searchQuery . '%');
 
-//    public function findOneBySomeField($value): ?User
-//    {
-//        return $this->createQueryBuilder('u')
-//            ->andWhere('u.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        if (count($exclude) > 0) {
+            $qb
+                ->andWhere('u NOT IN (:users)')
+                ->setParameter('users', $exclude);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }
