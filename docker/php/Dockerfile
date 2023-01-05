@@ -11,6 +11,3 @@ RUN apt update \
 WORKDIR /var/www/symfony
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-RUN curl -fsSL https://deb.nodesource.com/setup_19.x | bash - &&\
-    apt-get install -y nodejs
