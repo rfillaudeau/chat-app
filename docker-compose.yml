@@ -22,17 +22,30 @@ services:
         ports:
             - '9000:9000'
         volumes:
-            - .:/var/www/app
+            - ./symfony:/var/www/symfony
         depends_on:
             - database
+
+    node:
+        container_name: node
+        #        image: node:19.3-alpine
+        build:
+            context: ./
+            dockerfile: ./docker/node/Dockerfile
+        ports:
+            - '5173:5173'
+        volumes:
+            - ./reactjs:/app
 
     nginx:
         container_name: nginx
         image: nginx:1.22-alpine
         ports:
             - '80:80'
+            - '8080:8080'
         volumes:
-            - .:/var/www/app
+            - ./reactjs:/app
+            - ./symfony:/var/www/symfony
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
         depends_on:
             - php
