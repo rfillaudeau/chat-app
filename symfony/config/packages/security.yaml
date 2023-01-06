@@ -1,7 +1,10 @@
 security:
+    enable_authenticator_manager: true
+
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
@@ -9,21 +12,24 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|styles|images|js)/
             security: false
-        main:
-            lazy: true
-            provider: app_user_provider
-            json_login:
-                check_path: api_login
-                username_path: email
-                password_path: password
-            logout:
-                path: app_logout
-                # where to redirect after logout
-                # target: app_any_route
+        api_token:
+            pattern: ^/api/auth/token$
+            security: false
+        api:
+            pattern: ^/api
+            security: true
+            stateless: true
+            oauth2: true
+            #        main:
+            #            lazy: true
+            #            provider: app_user_provider
+            # where to redirect after logout
+            # target: app_any_route
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -34,8 +40,10 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/token, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/authorize, roles: IS_AUTHENTICATED_REMEMBERED }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

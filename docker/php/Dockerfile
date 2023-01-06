@@ -11,3 +11,6 @@ RUN apt update \
 WORKDIR /var/www/symfony
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# TODO: create the private and public keys for oauth, chmod on them
+# php bin/console league:oauth2-server:create-client --grant-type=password --grant-type=refresh_token app

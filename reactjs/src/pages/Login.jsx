@@ -1,10 +1,10 @@
 import React, {useEffect, useRef, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
-import axios from "axios"
 import {useUser} from "../contexts/UserContext.jsx"
+import api from "../services/api.js"
 
 function Login() {
-    const {currentUser} = useUser()
+    const {currentUser, updateToken} = useUser()
     const [inputs, setInputs] = useState({
         email: "",
         password: ""
@@ -46,25 +46,26 @@ function Login() {
 
         console.log(inputs)
 
-        axios.post("/api/login", {
-            email: inputs.email,
-            password: inputs.password
-        }, {
-            baseURL: "http://localhost:8080"
+        // api.postToken(inputs.email, inputs.password)
+
+        let formData = new FormData()
+        formData.append("grant_type", "password")
+        formData.append("client_id", "ec9fef325482cb52d6ea319bd1c58e81")
+        formData.append("client_secret", "25e48fe34d70393dc9464765171e8d9afefaa6e5e6800a14eaaf123bac66babb0c002e7e3aa12e781f787078d950151ce7f8aaac926b709ca618d46747fa0d57")
+        formData.append("username", inputs.email)
+        formData.append("password", inputs.password)
+
+        api.post("/auth/token", formData).then(response => {
+            console.log(response.data)
+
+            // location.href = "/"
+        }).catch(response => {
+            console.error(response)
+
+            setError("Incorrect email or password.")
+        }).finally(() => {
+            submitButtonRef.current.disabled = false
         })
-            .then(response => {
-                console.log(response.data)
-
-                location.href = "/"
-            })
-            .catch(response => {
-                console.error(response)
-
-                setError("Incorrect email or password.")
-            })
-            .finally(() => {
-                submitButtonRef.current.disabled = false
-            })
     }
 
     return (

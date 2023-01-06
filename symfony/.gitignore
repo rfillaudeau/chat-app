@@ -10,3 +10,7 @@
 # PHPUnit
 /phpunit.xml
 .phpunit.result.cache
+
+###> league/oauth2-server-bundle ###
+/config/jwt
+###< league/oauth2-server-bundle ###

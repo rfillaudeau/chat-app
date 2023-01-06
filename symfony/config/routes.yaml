@@ -3,3 +3,8 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+oauth2:
+    resource: '@LeagueOAuth2ServerBundle/Resources/config/routes.php'
+    type: php
+    prefix: '/api/auth'
