@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from "react"
 import {useUser} from "../../../contexts/UserContext.jsx"
-import axios, {CanceledError} from "axios"
+import {CanceledError} from "axios"
 import CurrentUserCard from "./CurrentUserCard.jsx"
 import RoomFormModal from "../../../components/RoomFormModal.jsx"
 import RoomCard from "./RoomCard.jsx"
+import api from "../../../services/api.js"
 
 function SideBar({currentRoomId}) {
-    const {currentUser} = useUser()
+    const {currentUser, token} = useUser()
     const [rooms, setRooms] = useState([])
     const [roomsToDisplay, setRoomsToDisplay] = useState([])
     const [searchRoom, setSearchRoom] = useState("")
@@ -18,9 +19,9 @@ function SideBar({currentRoomId}) {
 
         let controller = new AbortController()
 
-        axios.get("/api/rooms", {
+        api.get("/rooms", {
             signal: controller.signal,
-            baseURL: "http://localhost:8080"
+            headers: {Authorization: `${token.token_type} ${token.access_token}`}
         }).then(response => {
             setRooms(response.data)
         }).catch(error => {

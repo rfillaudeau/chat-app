@@ -2,7 +2,7 @@ import React from "react"
 import {useUser} from "../../../contexts/UserContext.jsx"
 
 function CurrentUserCard() {
-    const {currentUser} = useUser()
+    const {currentUser, removeToken} = useUser()
 
     if (currentUser === null) {
         return
@@ -35,12 +35,13 @@ function CurrentUserCard() {
                     <i className="bi bi-gear"></i> Settings
                 </button>
 
-                <a
-                    href="/logout"
+                <button
+                    type="button"
                     className="block text-center rounded-md bg-zinc-600 px-2 py-2 text-xs hover:bg-zinc-500"
+                    onClick={() => removeToken()}
                 >
                     <i className="bi bi-escape"></i> Logout
-                </a>
+                </button>
             </div>
         </div>
     )

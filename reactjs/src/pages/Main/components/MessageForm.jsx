@@ -1,7 +1,9 @@
 import React, {useEffect, useRef} from "react"
-import axios from "axios"
+import api from "../../../services/api.js"
+import {useUser} from "../../../contexts/UserContext.jsx"
 
 function MessageForm({currentRoomId, onMessageSent}) {
+    const {token} = useUser()
     const submitButtonRef = useRef(null)
     const newMessageInputRef = useRef(null)
 
@@ -23,8 +25,8 @@ function MessageForm({currentRoomId, onMessageSent}) {
 
         submitButtonRef.current.disabled = true
 
-        axios.post(`/api/rooms/${currentRoomId}/messages`, {text}, {
-            baseURL: "http://localhost:8080"
+        api.post(`/api/rooms/${currentRoomId}/messages`, {text}, {
+            headers: {Authorization: `${token.token_type} ${token.access_token}`}
         }).then(response => {
             if (onMessageSent instanceof Function) {
                 onMessageSent(response.data)

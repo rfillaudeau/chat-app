@@ -1,11 +1,12 @@
 import React, {useEffect, useRef, useState} from "react"
 import {useUser} from "../../../contexts/UserContext.jsx"
-import axios, {CanceledError} from "axios"
+import {CanceledError} from "axios"
 import Message from "./Message.jsx"
 import MessageForm from "./MessageForm.jsx"
+import api from "../../../services/api.js"
 
 function RoomContainer({currentRoomId}) {
-    const {currentUser} = useUser()
+    const {currentUser, token} = useUser()
     const [rawMessages, setRawMessages] = useState([])
     const [formattedMessages, setFormattedMessages] = useState([])
     const messagesBottomRef = useRef(null)
@@ -17,9 +18,9 @@ function RoomContainer({currentRoomId}) {
 
         let controller = new AbortController()
 
-        axios.get(`/api/rooms/${currentRoomId}/messages`, {
+        api.get(`/rooms/${currentRoomId}/messages`, {
             signal: controller.signal,
-            baseURL: "http://localhost:8080"
+            headers: {Authorization: `${token.token_type} ${token.access_token}`}
         }).then(response => {
             setRawMessages(response.data)
         }).catch(error => {
@@ -38,7 +39,7 @@ function RoomContainer({currentRoomId}) {
             return
         }
 
-        const hub = new URL(document.mercureLink)
+        const hub = new URL(import.meta.env.VITE_MERCURE_PUBLIC_URL)
         hub.searchParams.append("topic", `rooms/${currentRoomId}`)
 
         // Subscribe to updates
