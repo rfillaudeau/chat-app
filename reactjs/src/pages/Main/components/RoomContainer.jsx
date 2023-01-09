@@ -1,26 +1,24 @@
 import React, {useEffect, useRef, useState} from "react"
-import {useUser} from "../../../contexts/UserContext.jsx"
 import {CanceledError} from "axios"
 import Message from "./Message.jsx"
 import MessageForm from "./MessageForm.jsx"
-import api from "../../../services/api.js"
+import {useAuth} from "../../../contexts/AuthContext.jsx"
 
 function RoomContainer({currentRoomId}) {
-    const {currentUser, token} = useUser()
+    const {api} = useAuth()
     const [rawMessages, setRawMessages] = useState([])
     const [formattedMessages, setFormattedMessages] = useState([])
     const messagesBottomRef = useRef(null)
 
     useEffect(() => {
-        if (currentUser === null || currentRoomId === null) {
+        if (currentRoomId === null) {
             return
         }
 
         let controller = new AbortController()
 
         api.get(`/rooms/${currentRoomId}/messages`, {
-            signal: controller.signal,
-            headers: {Authorization: `${token.token_type} ${token.access_token}`}
+            signal: controller.signal
         }).then(response => {
             setRawMessages(response.data)
         }).catch(error => {
@@ -32,10 +30,10 @@ function RoomContainer({currentRoomId}) {
         })
 
         return () => controller.abort()
-    }, [currentUser, currentRoomId])
+    }, [currentRoomId])
 
     useEffect(() => {
-        if (currentUser === null || currentRoomId === null) {
+        if (currentRoomId === null) {
             return
         }
 
@@ -49,7 +47,7 @@ function RoomContainer({currentRoomId}) {
         }
 
         return () => eventSource.close()
-    }, [currentUser, currentRoomId])
+    }, [currentRoomId])
 
     useEffect(() => {
         // scroll to bottom every time messages change
@@ -76,7 +74,7 @@ function RoomContainer({currentRoomId}) {
         setFormattedMessages(messages)
     }, [rawMessages])
 
-    if (currentUser === null || currentRoomId === null) {
+    if (currentRoomId === null) {
         return
     }
 

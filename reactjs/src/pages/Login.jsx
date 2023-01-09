@@ -1,10 +1,9 @@
 import React, {useEffect, useRef, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
-import {useUser} from "../contexts/UserContext.jsx"
-import api from "../services/api.js"
+import {useAuth} from "../contexts/AuthContext.jsx"
 
 function Login() {
-    const {currentUser, updateToken, updateCurrentUser} = useUser()
+    const {currentUser, login} = useAuth()
     const [inputs, setInputs] = useState({
         email: "",
         password: ""
@@ -44,43 +43,7 @@ function Login() {
             return
         }
 
-        console.log(inputs)
-
-        // api.postToken(inputs.email, inputs.password)
-
-        // api.post("/login", {
-        //     username: inputs.email,
-        //     password: inputs.password
-        // }).then(response => {
-        //     console.log(response.data)
-        //
-        //     updateCurrentUser(response.data)
-        //
-        //     // updateToken(response.data)
-        //
-        //     // location.href = "/"
-        // }).catch(response => {
-        //     console.error(response)
-        //
-        //     setError("Incorrect email or password.")
-        // }).finally(() => {
-        //     submitButtonRef.current.disabled = false
-        // })
-
-        let formData = new FormData()
-        formData.append("grant_type", "password")
-        formData.append("client_id", import.meta.env.VITE_API_CLIENT_ID)
-        formData.append("client_secret", import.meta.env.VITE_API_CLIENT_SECRET)
-        formData.append("username", inputs.email)
-        formData.append("password", inputs.password)
-
-        api.post("/auth/token", formData).then(response => {
-            console.log(response.data)
-
-            updateToken(response.data)
-
-            // location.href = "/"
-        }).catch(response => {
+        login(inputs.email, inputs.password).catch(response => {
             console.error(response)
 
             setError("Incorrect email or password.")

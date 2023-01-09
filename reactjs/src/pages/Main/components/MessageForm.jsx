@@ -1,9 +1,8 @@
 import React, {useEffect, useRef} from "react"
-import api from "../../../services/api.js"
-import {useUser} from "../../../contexts/UserContext.jsx"
+import {useAuth} from "../../../contexts/AuthContext.jsx"
 
 function MessageForm({currentRoomId, onMessageSent}) {
-    const {token} = useUser()
+    const {api} = useAuth()
     const submitButtonRef = useRef(null)
     const newMessageInputRef = useRef(null)
 
@@ -25,8 +24,8 @@ function MessageForm({currentRoomId, onMessageSent}) {
 
         submitButtonRef.current.disabled = true
 
-        api.post(`/api/rooms/${currentRoomId}/messages`, {text}, {
-            headers: {Authorization: `${token.token_type} ${token.access_token}`}
+        api.post(`/rooms/${currentRoomId}/messages`, {
+            text
         }).then(response => {
             if (onMessageSent instanceof Function) {
                 onMessageSent(response.data)

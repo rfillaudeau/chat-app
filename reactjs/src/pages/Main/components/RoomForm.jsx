@@ -1,7 +1,8 @@
 import React, {useRef, useState} from "react"
-import axios from "axios"
+import {useAuth} from "../../../contexts/AuthContext.jsx"
 
 function RoomForm() {
+    const {api} = useAuth()
     const [inputs, setInputs] = useState({
         name: "",
         // password: ""
@@ -36,33 +37,29 @@ function RoomForm() {
 
         console.log(inputs)
 
-        // axios.post("/api/rooms", {
-        //     email: inputs.email,
-        //     password: inputs.password
-        // })
-        //     .then(response => {
-        //         console.log(response.data)
-        //
-        //         location.href = "/"
-        //     })
-        //     .catch(response => {
-        //         console.error(response)
-        //
-        //         setError("Incorrect email or password.")
-        //     })
-        //     .finally(() => {
-        //         submitButtonRef.current.disabled = false
-        //     })
+        api.post("/rooms", {
+            email: inputs.email,
+            password: inputs.password
+        }).then(response => {
+            console.log(response.data)
+
+            location.href = "/"
+        }).catch(response => {
+            console.error(response)
+
+            setError("Incorrect email or password.")
+        }).finally(() => {
+            submitButtonRef.current.disabled = false
+        })
     }
 
     function searchUsers(event) {
         console.log(event)
 
-        axios.get("/api/users", {
+        api.get("/users", {
             params: {
                 search: event.target.value
-            },
-            baseURL: "http://localhost:8080"
+            }
         }).then(response => {
             console.log(response.data)
 

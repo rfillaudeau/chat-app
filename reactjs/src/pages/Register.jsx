@@ -1,10 +1,10 @@
 import React, {useEffect, useRef, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
 import axios from "axios"
-import {useUser} from "../contexts/UserContext.jsx"
+import {useAuth} from "../contexts/AuthContext.jsx"
 
 function Register() {
-    const {currentUser} = useUser()
+    const {currentUser} = useAuth()
     const [inputs, setInputs] = useState({
         email: "",
         username: "",

@@ -1,22 +1,22 @@
 import React, {useEffect} from "react"
-import {useUser} from "../../contexts/UserContext.jsx"
 import {useNavigate, useParams} from "react-router-dom"
 import RoomContainer from "./components/RoomContainer.jsx"
 import SideBar from "./components/SideBar.jsx"
+import {useAuth} from "../../contexts/AuthContext.jsx"
 
 function Main() {
-    const {currentUser} = useUser()
+    const {isAuthenticated} = useAuth()
     const navigate = useNavigate()
     let {roomId: currentRoomId} = useParams()
     currentRoomId = currentRoomId !== undefined ? parseInt(currentRoomId) : null
 
     useEffect(() => {
-        if (currentUser == null) {
+        if (!isAuthenticated) {
             navigate("/login")
         }
-    }, [currentUser])
+    }, [isAuthenticated])
 
-    if (currentUser == null) {
+    if (!isAuthenticated) {
         return
     }
 
