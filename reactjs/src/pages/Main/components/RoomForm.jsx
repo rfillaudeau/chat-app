@@ -1,11 +1,12 @@
 import React, {useRef, useState} from "react"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
+import SelectUsersInput from "./SelectUsersInput.jsx"
 
 function RoomForm() {
     const {api} = useAuth()
     const [inputs, setInputs] = useState({
         name: "",
-        // password: ""
+        users: []
     })
     const [error, setError] = useState(null)
     const submitButtonRef = useRef(null)
@@ -19,8 +20,25 @@ function RoomForm() {
         }))
     }
 
+    function handleSelectedUsersChange(users) {
+        setInputs(prevInputs => ({
+            ...prevInputs,
+            users: users
+        }))
+    }
+
     function handleValidation() {
         setError(null)
+
+        if (inputs.name.trim() === "") {
+            setError("The name must be filled.")
+            return false
+        }
+
+        if (inputs.users.length === 0) {
+            setError("At least one user should be added to the room.")
+            return false
+        }
 
         return true
     }
@@ -38,38 +56,19 @@ function RoomForm() {
         console.log(inputs)
 
         api.post("/rooms", {
-            email: inputs.email,
-            password: inputs.password
+            name: inputs.name,
+            users: inputs.users.map(user => user.username)
         }).then(response => {
             console.log(response.data)
 
-            location.href = "/"
-        }).catch(response => {
-            console.error(response)
+            // TODO: Empty and close the modal, then add the new room
+            // to the list and switch to it
+        }).catch(error => {
+            console.error(error)
 
-            setError("Incorrect email or password.")
+            setError("Unknown error.")
         }).finally(() => {
             submitButtonRef.current.disabled = false
-        })
-    }
-
-    function searchUsers(event) {
-        console.log(event)
-
-        api.get("/users", {
-            params: {
-                search: event.target.value
-            }
-        }).then(response => {
-            console.log(response.data)
-
-            // location.href = "/"
-        }).catch(response => {
-            console.error(response)
-
-            // setError("Incorrect email or password.")
-        }).finally(() => {
-            // submitButtonRef.current.disabled = false
         })
     }
 
@@ -97,16 +96,7 @@ function RoomForm() {
                     Users
                 </label>
 
-                <input
-                    type="text"
-                    name="users"
-                    id="users"
-                    autoComplete="off"
-                    required
-                    className="block w-full rounded-md px-3 py-2 bg-transparent border-2 border-zinc-600 focus:border-zinc-500 focus:ring-zinc-500"
-                    // value={inputs.password}
-                    onChange={searchUsers}
-                />
+                <SelectUsersInput onChange={handleSelectedUsersChange}/>
             </div>
 
             {error !== null && (

@@ -3,12 +3,13 @@ import {useNavigate, useParams} from "react-router-dom"
 import RoomContainer from "./components/RoomContainer.jsx"
 import SideBar from "./components/SideBar.jsx"
 import {useAuth} from "../../contexts/AuthContext.jsx"
+import {RoomContextProvider} from "./contexts/RoomContext.jsx"
 
 function Main() {
     const {isAuthenticated} = useAuth()
     const navigate = useNavigate()
-    let {roomId: currentRoomId} = useParams()
-    currentRoomId = currentRoomId !== undefined ? parseInt(currentRoomId) : null
+    let {roomId: defaultRoomId} = useParams()
+    defaultRoomId = defaultRoomId !== undefined ? parseInt(defaultRoomId) : null
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -22,9 +23,11 @@ function Main() {
 
     return (
         <div className="flex h-screen text-zinc-300">
-            <SideBar currentRoomId={currentRoomId}/>
+            <RoomContextProvider defaultRoomId={defaultRoomId}>
+                <SideBar/>
 
-            <RoomContainer currentRoomId={currentRoomId}/>
+                <RoomContainer/>
+            </RoomContextProvider>
         </div>
     )
 }

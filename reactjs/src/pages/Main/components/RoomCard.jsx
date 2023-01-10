@@ -1,11 +1,18 @@
 import React from "react"
 import {Link} from "react-router-dom"
 
-function RoomCard({room, isSelected}) {
+function RoomCard({room, isSelected, onSelect}) {
+    function handleSelect() {
+        if (onSelect instanceof Function) {
+            onSelect(room)
+        }
+    }
+
     return (
         <Link
             to={`/room/${room.id}`}
             className={`block flex items-center rounded-2xl hover:bg-zinc-700 px-4 py-3${isSelected ? " bg-zinc-700" : ""}`}
+            onClick={handleSelect}
         >
             <img
                 src="https://picsum.photos/id/13/200/200"

@@ -4,10 +4,11 @@ import CurrentUserCard from "./CurrentUserCard.jsx"
 import RoomFormModal from "../../../components/RoomFormModal.jsx"
 import RoomCard from "./RoomCard.jsx"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
+import {useRoom} from "../contexts/RoomContext.jsx"
 
-function SideBar({currentRoomId}) {
+function SideBar() {
     const {api} = useAuth()
-    const [rooms, setRooms] = useState([])
+    const {currentRoom, setCurrentRoom, rooms, setRooms} = useRoom()
     const [roomsToDisplay, setRoomsToDisplay] = useState([])
     const [searchRoom, setSearchRoom] = useState("")
 
@@ -52,7 +53,12 @@ function SideBar({currentRoomId}) {
     }, [rooms, searchRoom])
 
     const roomElements = roomsToDisplay.map((room, index) => (
-        <RoomCard key={index} room={room} isSelected={room.id === currentRoomId}/>
+        <RoomCard
+            key={index}
+            room={room}
+            isSelected={currentRoom !== null && room.id === currentRoom.id}
+            onSelect={room => setCurrentRoom(room)}
+        />
     ))
 
     return (
@@ -75,7 +81,7 @@ function SideBar({currentRoomId}) {
 
             <div
                 className="flex-grow overflow-auto space-y-2 scrollbar-thin scrollbar-thumb-zinc-500 scrollbar-track-transparent">
-                {roomElements}
+                {roomElements.length > 0 ? roomElements : <div className="text-center">No room found.</div>}
             </div>
         </div>
     )

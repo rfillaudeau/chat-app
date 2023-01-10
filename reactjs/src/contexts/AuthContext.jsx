@@ -10,7 +10,7 @@ const USER_KEY = "user"
 
 const AuthContext = createContext(null)
 
-function AuthContextProvider({children}) {
+export function AuthContextProvider({children}) {
     const [accessToken, setAccessToken] = useState(storage.loadString(ACCESS_TOKEN_KEY))
     const [refreshToken, setRefreshToken] = useState(storage.loadString(REFRESH_TOKEN_KEY))
     const [accessTokenExpiryDate, setAccessTokenExpiryDate] = useState(storage.loadDate(ACCESS_TOKEN_EXPIRY_DATE_KEY))
@@ -167,8 +167,6 @@ function AuthContextProvider({children}) {
     )
 }
 
-const useAuth = () => useContext(AuthContext)
-
-export {AuthContextProvider, useAuth}
+export const useAuth = () => useContext(AuthContext)
 
 export default AuthContext

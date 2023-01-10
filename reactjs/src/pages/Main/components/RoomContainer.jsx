@@ -3,21 +3,24 @@ import {CanceledError} from "axios"
 import Message from "./Message.jsx"
 import MessageForm from "./MessageForm.jsx"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
+import {useRoom} from "../contexts/RoomContext.jsx"
+import useMercure from "../../../hooks/useMercure.jsx"
 
-function RoomContainer({currentRoomId}) {
+function RoomContainer() {
     const {api} = useAuth()
+    const {currentRoom} = useRoom()
     const [rawMessages, setRawMessages] = useState([])
     const [formattedMessages, setFormattedMessages] = useState([])
     const messagesBottomRef = useRef(null)
 
     useEffect(() => {
-        if (currentRoomId === null) {
+        if (currentRoom === null) {
             return
         }
 
         let controller = new AbortController()
 
-        api.get(`/rooms/${currentRoomId}/messages`, {
+        api.get(`/rooms/${currentRoom.id}/messages`, {
             signal: controller.signal
         }).then(response => {
             setRawMessages(response.data)
@@ -30,24 +33,7 @@ function RoomContainer({currentRoomId}) {
         })
 
         return () => controller.abort()
-    }, [currentRoomId])
-
-    useEffect(() => {
-        if (currentRoomId === null) {
-            return
-        }
-
-        const hub = new URL(import.meta.env.VITE_MERCURE_PUBLIC_URL)
-        hub.searchParams.append("topic", `rooms/${currentRoomId}`)
-
-        // Subscribe to updates
-        const eventSource = new EventSource(hub)
-        eventSource.onmessage = event => {
-            addRawMessage(JSON.parse(event.data))
-        }
-
-        return () => eventSource.close()
-    }, [currentRoomId])
+    }, [currentRoom])
 
     useEffect(() => {
         // scroll to bottom every time messages change
@@ -74,13 +60,9 @@ function RoomContainer({currentRoomId}) {
         setFormattedMessages(messages)
     }, [rawMessages])
 
-    if (currentRoomId === null) {
-        return
-    }
-
-    const messageElements = formattedMessages.map((message, index) => (
-        <Message key={index} message={message}/>
-    ))
+    useMercure(currentRoom === null ? null : `rooms/${currentRoom.id}`, message => {
+        addRawMessage(message)
+    })
 
     function addRawMessage(newMessage) {
         setRawMessages(prevMessages => {
@@ -92,6 +74,14 @@ function RoomContainer({currentRoomId}) {
             return messages
         })
     }
+
+    if (currentRoom === null) {
+        return
+    }
+
+    const messageElements = formattedMessages.map((message, index) => (
+        <Message key={index} message={message}/>
+    ))
 
     return (
         <div className="flex w-3/4 flex-col px-6 py-4 bg-zinc-900">
@@ -117,7 +107,7 @@ function RoomContainer({currentRoomId}) {
                 <div ref={messagesBottomRef}></div>
             </div>
 
-            <MessageForm currentRoomId={currentRoomId} onMessageSent={message => addRawMessage(message)}/>
+            <MessageForm room={currentRoom} onMessageSent={message => addRawMessage(message)}/>
         </div>
     )
 }

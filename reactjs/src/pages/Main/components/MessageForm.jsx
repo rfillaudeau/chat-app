@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from "react"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
 
-function MessageForm({currentRoomId, onMessageSent}) {
+function MessageForm({room, onMessageSent}) {
     const {api} = useAuth()
     const submitButtonRef = useRef(null)
     const newMessageInputRef = useRef(null)
@@ -12,7 +12,7 @@ function MessageForm({currentRoomId, onMessageSent}) {
         }
 
         newMessageInputRef.current.value = ""
-    }, [currentRoomId])
+    }, [room])
 
     function handleSendMessage(event) {
         event.preventDefault()
@@ -24,7 +24,7 @@ function MessageForm({currentRoomId, onMessageSent}) {
 
         submitButtonRef.current.disabled = true
 
-        api.post(`/rooms/${currentRoomId}/messages`, {
+        api.post(`/rooms/${room.id}/messages`, {
             text
         }).then(response => {
             if (onMessageSent instanceof Function) {
