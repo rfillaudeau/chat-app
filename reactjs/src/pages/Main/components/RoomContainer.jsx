@@ -7,14 +7,14 @@ import {useRoom} from "../contexts/RoomContext.jsx"
 import useMercure from "../../../hooks/useMercure.jsx"
 
 function RoomContainer() {
-    const {api} = useAuth()
+    const {api, isLoading} = useAuth()
     const {currentRoom} = useRoom()
     const [rawMessages, setRawMessages] = useState([])
     const [formattedMessages, setFormattedMessages] = useState([])
     const messagesBottomRef = useRef(null)
 
     useEffect(() => {
-        if (currentRoom === null) {
+        if (currentRoom === null || isLoading) {
             return
         }
 
@@ -33,7 +33,7 @@ function RoomContainer() {
         })
 
         return () => controller.abort()
-    }, [currentRoom])
+    }, [currentRoom, isLoading])
 
     useEffect(() => {
         // scroll to bottom every time messages change

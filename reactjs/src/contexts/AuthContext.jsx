@@ -16,6 +16,7 @@ export function AuthContextProvider({children}) {
     const [accessTokenExpiryDate, setAccessTokenExpiryDate] = useState(storage.loadDate(ACCESS_TOKEN_EXPIRY_DATE_KEY))
     const [refreshTokenExpiryDate, setRefreshTokenExpiryDate] = useState(storage.loadDate(REFRESH_TOKEN_EXPIRY_DATE_KEY))
     const [user, setUser] = useState(storage.loadObject(USER_KEY))
+    const [isLoading, setIsLoading] = useState(true)
 
     let apiConfig = {
         baseURL: import.meta.env.VITE_API_BASE_URL
@@ -31,14 +32,21 @@ export function AuthContextProvider({children}) {
 
     // Refresh the Access Token when expired
     useEffect(() => {
+        const now = new Date()
         if (
             accessTokenExpiryDate === null
-            || (refreshTokenExpiryDate !== null && refreshTokenExpiryDate <= new Date())
+            || (refreshTokenExpiryDate !== null && refreshTokenExpiryDate <= now)
         ) {
+            setIsLoading(false)
+
             return
         }
 
-        const callRefreshTime = (accessTokenExpiryDate.getTime() - (new Date()).getTime())
+        const callRefreshTime = accessTokenExpiryDate.getTime() - now.getTime()
+        if (callRefreshTime > 0) {
+            setIsLoading(false)
+        }
+
         const timeoutId = setTimeout(() => updateTokens(), callRefreshTime)
 
         return () => clearTimeout(timeoutId)
@@ -62,7 +70,7 @@ export function AuthContextProvider({children}) {
 
     // Update the logged user data
     useEffect(() => {
-        if (accessToken === null) {
+        if (accessToken === null || isLoading) {
             return
         }
 
@@ -84,7 +92,7 @@ export function AuthContextProvider({children}) {
         })
 
         return () => controller.abort()
-    }, [accessToken])
+    }, [accessToken, isLoading])
 
     function login(email, password) {
         let formData = new FormData()
@@ -110,6 +118,7 @@ export function AuthContextProvider({children}) {
 
         api.post("/auth/token", formData).then(response => {
             saveTokenData(response.data)
+            setIsLoading(false)
         }).catch(error => {
             if (error instanceof AxiosError && error.status === 401) {
                 clearData()
@@ -150,6 +159,7 @@ export function AuthContextProvider({children}) {
         setRefreshToken(null)
         setRefreshTokenExpiryDate(null)
         setUser(null)
+        setIsLoading(false)
 
         storage.clear()
     }
@@ -160,7 +170,8 @@ export function AuthContextProvider({children}) {
             isAuthenticated: user != null,
             login,
             logout,
-            api
+            api,
+            isLoading
         }}>
             {children}
         </AuthContext.Provider>

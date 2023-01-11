@@ -5,14 +5,19 @@ import RoomFormModal from "../../../components/RoomFormModal.jsx"
 import RoomCard from "./RoomCard.jsx"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
 import {useRoom} from "../contexts/RoomContext.jsx"
+import useMercure from "../../../hooks/useMercure.jsx"
 
 function SideBar() {
-    const {api} = useAuth()
+    const {currentUser, api, isLoading} = useAuth()
     const {currentRoom, setCurrentRoom, rooms, setRooms} = useRoom()
     const [roomsToDisplay, setRoomsToDisplay] = useState([])
     const [searchRoom, setSearchRoom] = useState("")
 
     useEffect(() => {
+        if (isLoading) {
+            return
+        }
+
         let controller = new AbortController()
 
         api.get("/rooms", {
@@ -28,7 +33,7 @@ function SideBar() {
         })
 
         return () => controller.abort()
-    }, [])
+    }, [isLoading])
 
     useEffect(() => {
         const searchQuery = searchRoom
@@ -51,6 +56,17 @@ function SideBar() {
             return false
         }))
     }, [rooms, searchRoom])
+
+    useMercure(`users/${currentUser.id}/rooms`, room => {
+        setRooms(prevRooms => {
+            let newRooms = [...prevRooms]
+            if (newRooms.find(r => r.id === room.id) == null) {
+                newRooms.push(room)
+            }
+
+            return newRooms
+        })
+    })
 
     const roomElements = roomsToDisplay.map((room, index) => (
         <RoomCard

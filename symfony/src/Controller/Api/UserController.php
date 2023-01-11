@@ -20,15 +20,15 @@ class UserController extends AbstractController
     {
     }
 
-    #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
-    public function me(): JsonResponse
-    {
-        return $this->json($this->getUser(), Response::HTTP_OK, [], [
-            AbstractNormalizer::GROUPS => [
-                User::GROUP_DEFAULT
-            ]
-        ]);
-    }
+//    #[Route('/me', name: 'me', methods: [Request::METHOD_GET])]
+//    public function me(): JsonResponse
+//    {
+//        return $this->json($this->getUser(), Response::HTTP_OK, [], [
+//            AbstractNormalizer::GROUPS => [
+//                User::GROUP_DEFAULT
+//            ]
+//        ]);
+//    }
 
     #[Route('', name: 'search', methods: [Request::METHOD_GET])]
     public function search(Request $request): JsonResponse

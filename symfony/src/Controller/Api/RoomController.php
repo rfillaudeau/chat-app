@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Repository\RoomRepository;
 use App\Repository\UserRepository;
 use App\Security\RoomVoter;
+use App\Service\MercurePublisher;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,8 +40,9 @@ class RoomController extends AbstractController
      */
     #[Route('', name: 'create', methods: [Request::METHOD_POST])]
     public function create(
-        Request        $request,
-        UserRepository $userRepository
+        Request          $request,
+        UserRepository   $userRepository,
+        MercurePublisher $publisher
     ): JsonResponse
     {
         /** @var RoomDto $roomDto */
@@ -68,6 +70,8 @@ class RoomController extends AbstractController
 
         $this->entityManager->persist($room);
         $this->entityManager->flush();
+
+        $publisher->publishRoom($room);
 
         return $this->json($room, Response::HTTP_CREATED);
     }

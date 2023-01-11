@@ -2,13 +2,34 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use App\Controller\GetCurrentUser;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(
+            uriTemplate: '/users/me',
+            controller: GetCurrentUser::class,
+            name: 'me'
+        )
+    ],
+    normalizationContext: [
+        AbstractNormalizer::GROUPS => [
+            self::GROUP_DEFAULT
+        ]
+    ],
+    security: "is_granted('ROLE_USER')"
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
