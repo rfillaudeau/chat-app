@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use App\Controller\GetCurrentUser;
+use App\Controller\User\GetCurrentUser;
+use App\Filter\ExcludeCurrentUserFilter;
+use App\Filter\OrFilter;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -18,18 +21,25 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
     operations: [
         new GetCollection(),
         new Get(
+            uriTemplate: '/users/{id}',
+            requirements: ['id' => '\d+'],
+        ),
+        new Get(
             uriTemplate: '/users/me',
             controller: GetCurrentUser::class,
-            name: 'me'
-        )
+            read: false,
+            name: 'me',
+        ),
     ],
     normalizationContext: [
         AbstractNormalizer::GROUPS => [
             self::GROUP_DEFAULT
         ]
     ],
-    security: "is_granted('ROLE_USER')"
+    security: 'is_granted("' . self::ROLE_USER . '")'
 )]
+#[ApiFilter(OrFilter::class, properties: ['username', 'email'])]
+#[ApiFilter(ExcludeCurrentUserFilter::class)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {

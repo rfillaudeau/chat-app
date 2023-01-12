@@ -5,7 +5,6 @@ namespace App\Controller\Api;
 use App\Dto\RoomDto;
 use App\Entity\Room;
 use App\Entity\User;
-use App\Repository\RoomRepository;
 use App\Repository\UserRepository;
 use App\Security\RoomVoter;
 use App\Service\MercurePublisher;
@@ -18,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -74,27 +72,6 @@ class RoomController extends AbstractController
         $publisher->publishRoom($room);
 
         return $this->json($room, Response::HTTP_CREATED);
-    }
-
-    #[Route('/{id}', name: 'read', requirements: ['id' => '\d+'], methods: [Request::METHOD_GET])]
-    public function read(Room $room): JsonResponse
-    {
-        $this->denyAccessUnlessGranted(RoomVoter::READ, $room);
-
-        return $this->json($room);
-    }
-
-    #[Route('', name: 'read_all', methods: [Request::METHOD_GET])]
-    public function readAll(RoomRepository $repository): JsonResponse
-    {
-        $rooms = $repository->findByUser($this->getUser());
-
-        return $this->json($rooms, Response::HTTP_OK, [], [
-            AbstractNormalizer::GROUPS => [
-                Room::GROUP_DEFAULT,
-                Room::GROUP_WITH_LAST_MESSAGE
-            ]
-        ]);
     }
 
     /**
@@ -154,16 +131,5 @@ class RoomController extends AbstractController
         $this->entityManager->flush();
 
         return $this->json($room);
-    }
-
-    #[Route('/{id}', name: 'delete', requirements: ['id' => '\d+'], methods: [Request::METHOD_DELETE])]
-    public function delete(Room $room): JsonResponse
-    {
-        $this->denyAccessUnlessGranted(RoomVoter::DELETE, $room);
-
-        $this->entityManager->remove($room);
-        $this->entityManager->flush();
-
-        return $this->json(null);
     }
 }

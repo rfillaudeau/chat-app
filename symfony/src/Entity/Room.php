@@ -2,12 +2,36 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use App\Repository\RoomRepository;
+use App\Security\RoomVoter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
+#[ApiResource(
+    operations: [
+        new GetCollection(),
+        new Get(
+            security: 'is_granted("' . RoomVoter::READ . '", object)'
+        ),
+        new Delete(
+            security: 'is_granted("' . RoomVoter::DELETE . '", object)'
+        ),
+    ],
+    normalizationContext: [
+        AbstractNormalizer::GROUPS => [
+            Room::GROUP_DEFAULT,
+            Room::GROUP_WITH_LAST_MESSAGE
+        ]
+    ],
+    security: 'is_granted("' . User::ROLE_USER . '")'
+)]
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {

@@ -33,25 +33,4 @@ class UserRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
-
-    /**
-     * @param string $searchQuery
-     * @param User[]|array $exclude
-     * @return User[]|array
-     */
-    public function searchByUsernameOrEmail(string $searchQuery, array $exclude = []): array
-    {
-        $qb = $this->createQueryBuilder('u')
-            ->andWhere('u.username LIKE :query')
-            ->orWhere('u.email LIKE :query')
-            ->setParameter('query', '%' . $searchQuery . '%');
-
-        if (count($exclude) > 0) {
-            $qb
-                ->andWhere('u NOT IN (:users)')
-                ->setParameter('users', $exclude);
-        }
-
-        return $qb->getQuery()->getResult();
-    }
 }

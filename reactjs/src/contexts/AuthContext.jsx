@@ -19,11 +19,15 @@ export function AuthContextProvider({children}) {
     const [isLoading, setIsLoading] = useState(true)
 
     let apiConfig = {
-        baseURL: import.meta.env.VITE_API_BASE_URL
+        baseURL: import.meta.env.VITE_API_BASE_URL,
+        headers: {
+            Accept: "application/json"
+        }
     }
 
     if (accessToken !== null) {
         apiConfig.headers = {
+            ...apiConfig.headers,
             Authorization: `Bearer ${accessToken}`
         }
     }

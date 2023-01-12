@@ -6,7 +6,6 @@ use App\Dto\MessageDto;
 use App\Entity\Message;
 use App\Entity\Room;
 use App\Entity\User;
-use App\Repository\MessageRepository;
 use App\Security\RoomVoter;
 use App\Service\MercurePublisher;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,11 +25,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class RoomMessageController extends AbstractController
 {
     public function __construct(
-        private readonly SerializerInterface $serializer,
+        private readonly SerializerInterface    $serializer,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ValidatorInterface $validator
+        private readonly ValidatorInterface     $validator
     )
-    {}
+    {
+    }
 
     #[Route('', name: 'create', methods: [Request::METHOD_POST])]
     public function create(Room $room, Request $request, MercurePublisher $publisher): JsonResponse
@@ -62,13 +62,13 @@ class RoomMessageController extends AbstractController
         return $this->json($message, Response::HTTP_CREATED);
     }
 
-    #[Route('', name: 'read_all', methods: [Request::METHOD_GET])]
-    public function readAll(Room $room, MessageRepository $messageRepository):JsonResponse
-    {
-        $this->denyAccessUnlessGranted(RoomVoter::READ, $room);
-
-        $messages = $messageRepository->findByRoom($room);
-
-        return $this->json($messages);
-    }
+//    #[Route('', name: 'read_all', methods: [Request::METHOD_GET])]
+//    public function readAll(Room $room, MessageRepository $messageRepository):JsonResponse
+//    {
+//        $this->denyAccessUnlessGranted(RoomVoter::READ, $room);
+//
+//        $messages = $messageRepository->findByRoom($room);
+//
+//        return $this->json($messages);
+//    }
 }

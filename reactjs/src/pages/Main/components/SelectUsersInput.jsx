@@ -15,7 +15,8 @@ function SelectUsersInput({onChange}) {
     function searchUsers(event) {
         api.get("/users", {
             params: {
-                search: event.target.value
+                usernameOrEmail: event.target.value,
+                excludeCurrentUser: true
             }
         }).then(response => {
             setUsers(response.data)
