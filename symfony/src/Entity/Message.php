@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
 use App\Repository\MessageRepository;
+use App\Security\RoomVoter;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,35 +25,30 @@ use Symfony\Component\Validator\Constraints as Assert;
                 AbstractNormalizer::GROUPS => [
                     Message::GROUP_CREATE
                 ]
-            ]
+            ],
+            securityPostValidation: 'is_granted("' . RoomVoter::CREATE_MESSAGE . '", object.getRoom())'
         ),
-    ]
+    ],
+    security: 'is_granted("' . User::ROLE_USER . '")'
 )]
 #[ApiResource(
     uriTemplate: '/rooms/{id}/messages',
     operations: [
         new GetCollection(),
-        new Post(
-            denormalizationContext: [
-                AbstractNormalizer::GROUPS => [
-                    Message::GROUP_CREATE_IN_ROOM
-                ]
-            ]
-        ),
     ],
     uriVariables: [
         'id' => new Link(
             toProperty: 'room',
             fromClass: Room::class
         )
-    ]
+    ],
+    security: 'is_granted("' . User::ROLE_USER . '")'
 )]
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
 {
     public const GROUP_DEFAULT = 'default';
     public const GROUP_CREATE = 'room:create';
-    public const GROUP_CREATE_IN_ROOM = 'room:create_in_room';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -61,7 +57,7 @@ class Message
     private ?int $id = null;
 
     #[ORM\Column(name: 'message_text', type: Types::TEXT)]
-    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE, self::GROUP_CREATE_IN_ROOM])]
+    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
     #[Assert\NotBlank]
     private ?string $text = null;
 

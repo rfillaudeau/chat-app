@@ -6,16 +6,20 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Controller\User\GetCurrentUser;
 use App\Filter\ExcludeCurrentUserFilter;
 use App\Filter\OrFilter;
 use App\Repository\UserRepository;
+use App\State\UserPasswordProcessor;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -36,14 +40,30 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
             self::GROUP_DEFAULT
         ]
     ],
-    security: 'is_granted("' . self::ROLE_USER . '")'
+    security: 'is_granted("' . self::ROLE_USER . '")',
+)]
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/auth/register',
+            denormalizationContext: [
+                AbstractNormalizer::GROUPS => [
+                    self::GROUP_CREATE
+                ]
+            ],
+            processor: UserPasswordProcessor::class,
+        ),
+    ]
 )]
 #[ApiFilter(OrFilter::class, properties: ['username', 'email'])]
 #[ApiFilter(ExcludeCurrentUserFilter::class)]
+#[UniqueEntity('email')]
+#[UniqueEntity('username')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const GROUP_DEFAULT = 'default';
+    public const GROUP_CREATE = 'user:create';
     public const ROLE_USER = 'ROLE_USER';
 
     #[ORM\Id]
@@ -53,11 +73,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 180)]
     private ?string $email = null;
 
     #[ORM\Column(length: 30, unique: true)]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 2, max: 30)]
     private ?string $username = null;
 
     #[ORM\Column]
@@ -67,6 +91,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     #[Ignore]
     private ?string $password = null;
+
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 6)]
+    #[Groups([self::GROUP_CREATE])]
+    private ?string $plainPassword = null;
 
     public function getId(): ?int
     {
@@ -141,12 +170,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(?string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
     /**
      * @see UserInterface
      */
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->plainPassword = null;
     }
 }

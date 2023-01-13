@@ -6,13 +6,16 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 use App\Repository\RoomRepository;
 use App\Security\RoomVoter;
+use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
@@ -20,6 +23,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
         new Get(
             security: 'is_granted("' . RoomVoter::READ . '", object)'
         ),
+        new Post(),
         new Delete(
             security: 'is_granted("' . RoomVoter::DELETE . '", object)'
         ),
@@ -46,6 +50,7 @@ class Room
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups([self::GROUP_DEFAULT])]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     /**
@@ -59,6 +64,11 @@ class Room
         orphanRemoval: true
     )]
     #[Groups([self::GROUP_DEFAULT])]
+    #[AppAssert\CurrentUserIsInArray]
+    #[Assert\All([
+        new Assert\NotBlank,
+    ])]
+    #[Assert\Count(min: 2)]
     private Collection|ArrayCollection|array $users;
 
     public function __construct()
@@ -91,26 +101,23 @@ class Room
         return $this->users;
     }
 
-    public function addUser(User $user): void
+    public function addUser(UserRoom $newUserRoom): void
     {
         foreach ($this->users as $userRoom) {
-            if ($userRoom->getUser() === $user) {
+            if ($userRoom->getUser() === $newUserRoom->getUser()) {
                 return;
             }
         }
 
-        $userRoom = (new UserRoom())
-            ->setUser($user)
-            ->setRoom($this);
-
-        $this->users->add($userRoom);
+        $newUserRoom->setRoom($this);
+        $this->users->add($newUserRoom);
     }
 
-    public function removeUser(User $user): void
+    public function removeUser(UserRoom $userRoom): void
     {
         $userIndex = -1;
         for ($i = 0; $i < $this->users->count(); $i++) {
-            if ($this->users[$i]->getUser() === $user) {
+            if ($this->users[$i]->getUser() === $userRoom->getUser()) {
                 $userIndex = $i;
                 break;
             }
@@ -120,7 +127,7 @@ class Room
             return;
         }
 
-        $this->users[$i]->setRoom(null);
+        $this->users[$userIndex]->setRoom(null);
         $this->users->remove($userIndex);
     }
 

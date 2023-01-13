@@ -24,7 +24,7 @@ final class UserResolveListener
             return;
         }
 
-        if (null === $user || !($user instanceof PasswordAuthenticatedUserInterface)) {
+        if (!($user instanceof PasswordAuthenticatedUserInterface)) {
             return;
         }
 

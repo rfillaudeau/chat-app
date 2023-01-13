@@ -26,3 +26,14 @@ services:
     App\EventListener\UserResolveListener:
         tags:
             - { name: kernel.event_listener, event: league.oauth2_server.event.user_resolve, method: onUserResolve }
+
+    App\State\UserPasswordProcessor:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+
+#    App\Serializer\ApiNormalizer:
+#        decorates: 'api_platform.jsonld.normalizer.item'
+#
+#    'app.serializer.normalizer.item.json':
+#        class: 'App\Serializer\ApiNormalizer'
+#        decorates: 'api_platform.serializer.normalizer.item'

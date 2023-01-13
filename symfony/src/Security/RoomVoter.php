@@ -17,11 +17,11 @@ class RoomVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if (!in_array($attribute, [self::READ, self::UPDATE, self::DELETE])) {
+        if (!in_array($attribute, [self::READ, self::UPDATE, self::DELETE, self::CREATE_MESSAGE])) {
             return false;
         }
 
-        if (!$subject instanceof Room) {
+        if (!($subject instanceof Room)) {
             return false;
         }
 
@@ -40,7 +40,7 @@ class RoomVoter extends Voter
             return false;
         }
 
-        return match($attribute) {
+        return match ($attribute) {
             self::READ, self::CREATE_MESSAGE => $this->canView($subject, $user),
             self::UPDATE => $this->canUpdate($subject, $user),
             self::DELETE => $this->canDelete($subject, $user),
@@ -50,6 +50,8 @@ class RoomVoter extends Voter
 
     private function canView(Room $room, User $user): bool
     {
+        dump("canView");
+
         foreach ($room->getUsers() as $userRoom) {
             if ($userRoom->getUser() === $user) {
                 return true;

@@ -6,13 +6,12 @@ use App\Entity\Message;
 use App\Entity\Room;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\NonUniqueResultException;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-class RoomNormalizer implements NormalizerInterface
+class RoomNormalizer/* implements NormalizerInterface*/
 {
     public function __construct(
         // Known issue workaround (https://github.com/symfony/maker-bundle/issues/1252)
