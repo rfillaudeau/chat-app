@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Post;
+use App\Controller\Message\GetLastMessageInRoom;
 use App\Repository\MessageRepository;
 use App\Security\RoomVoter;
 use DateTime;
@@ -19,7 +20,21 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     operations: [
-        new Get(),
+        new Get(
+            security: 'is_granted("' . RoomVoter::READ . '", object.getRoom())',
+            name: 'app_get_message',
+        ),
+        new Get(
+            uriTemplate: '/rooms/{id}/messages/last',
+            uriVariables: [
+                'id' => new Link(
+                    toProperty: 'room',
+                    fromClass: Room::class
+                )
+            ],
+            controller: GetLastMessageInRoom::class,
+            read: false,
+        ),
         new Post(
             denormalizationContext: [
                 AbstractNormalizer::GROUPS => [
@@ -28,54 +43,66 @@ use Symfony\Component\Validator\Constraints as Assert;
             ],
             securityPostValidation: 'is_granted("' . RoomVoter::CREATE_MESSAGE . '", object.getRoom())'
         ),
+        new GetCollection(
+            uriTemplate: '/rooms/{id}/messages',
+            uriVariables: [
+                'id' => new Link(
+                    toProperty: 'room',
+                    fromClass: Room::class
+                )
+            ],
+            normalizationContext: [
+                AbstractNormalizer::GROUPS => [
+                    Message::GROUP_READ,
+                    User::GROUP_READ,
+                ]
+            ],
+        // TODO: Add security
+        ),
     ],
-    security: 'is_granted("' . User::ROLE_USER . '")'
-)]
-#[ApiResource(
-    uriTemplate: '/rooms/{id}/messages',
-    operations: [
-        new GetCollection(),
+    normalizationContext: [
+        AbstractNormalizer::GROUPS => [
+            Message::GROUP_READ,
+            User::GROUP_READ,
+            Room::GROUP_READ,
+            UserRoom::GROUP_READ,
+        ]
     ],
-    uriVariables: [
-        'id' => new Link(
-            toProperty: 'room',
-            fromClass: Room::class
-        )
-    ],
-    security: 'is_granted("' . User::ROLE_USER . '")'
+    security: 'is_granted("' . User::ROLE_USER . '")',
 )]
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
 class Message
 {
-    public const GROUP_DEFAULT = 'default';
-    public const GROUP_CREATE = 'room:create';
+    public const GROUP_CREATE = 'message:create';
+    public const GROUP_READ = 'message:read';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(name: 'message_text', type: Types::TEXT)]
-    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[Assert\NotBlank]
     private ?string $text = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
+    #[MaxDepth(1)]
     #[Assert\NotNull]
     private ?User $user = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[MaxDepth(1)]
     #[Assert\NotNull]
     private ?Room $room = null;
 
     #[ORM\Column(type: 'datetime')]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
     private DateTime $createdAt;
 
     public function __construct()

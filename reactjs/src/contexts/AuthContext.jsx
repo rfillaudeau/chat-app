@@ -20,9 +20,6 @@ export function AuthContextProvider({children}) {
 
     let apiConfig = {
         baseURL: import.meta.env.VITE_API_BASE_URL,
-        headers: {
-            Accept: "application/json"
-        }
     }
 
     if (accessToken !== null) {

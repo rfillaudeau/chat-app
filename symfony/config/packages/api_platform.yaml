@@ -1,0 +1,33 @@
+api_platform:
+    title: 'Chat App API'
+
+    # The description of the API.
+    description: 'API description'
+
+    # The version of the API.
+    version: '1.0.0'
+
+    oauth:
+        # To enable or disable OAuth.
+        enabled: true
+
+        # The OAuth client ID.
+        clientId: ''
+
+        # The OAuth client secret.
+        clientSecret: ''
+
+        # The OAuth type.
+        type: 'oauth2'
+
+        # The OAuth flow grant type.
+        flow: 'password'
+
+        # The OAuth token url.
+        tokenUrl: '/api/auth/token'
+
+        # The OAuth authentication url.
+        authorizationUrl: '/api/auth/authorization'
+
+        # The OAuth scopes.
+        scopes: [ ]

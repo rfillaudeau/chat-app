@@ -24,19 +24,6 @@ class MessageRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return Message[]
-     */
-    public function findByRoom(Room $room): array
-    {
-        return $this->createQueryBuilder('m')
-            ->andWhere('m.room = :room')
-            ->orderBy('m.createdAt', 'ASC')
-            ->setParameter('room', $room)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * @throws NonUniqueResultException
      */
     public function findLastInRoom(Room $room): ?Message

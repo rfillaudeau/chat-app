@@ -50,8 +50,6 @@ class RoomVoter extends Voter
 
     private function canView(Room $room, User $user): bool
     {
-        dump("canView");
-
         foreach ($room->getUsers() as $userRoom) {
             if ($userRoom->getUser() === $user) {
                 return true;

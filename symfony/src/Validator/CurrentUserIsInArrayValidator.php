@@ -4,7 +4,7 @@ namespace App\Validator;
 
 use App\Entity\User;
 use App\Entity\UserRoom;
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Validator\Constraint;
@@ -23,8 +23,8 @@ class CurrentUserIsInArrayValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, CurrentUserIsInArray::class);
         }
 
-        if (!($value instanceof ArrayCollection)) {
-            throw new UnexpectedTypeException($value, ArrayCollection::class);
+        if (!($value instanceof Collection)) {
+            throw new UnexpectedTypeException($value, Collection::class);
         }
 
         $user = $this->security->getUser();

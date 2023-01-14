@@ -12,7 +12,8 @@ use Symfony\Component\Serializer\Annotation\Ignore;
 #[ORM\Entity(repositoryClass: UserRoomRepository::class)]
 class UserRoom
 {
-    public const GROUP_DEFAULT = 'default';
+    public const GROUP_CREATE = 'user_room:create';
+    public const GROUP_READ = 'user_room:read';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,16 +22,16 @@ class UserRoom
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(targetEntity: Room::class, inversedBy: 'users')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    #[Ignore] // TODO: use groups
+    #[Ignore]
     private ?Room $room = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
     private DateTime $createdAt;
 
     public function __construct()

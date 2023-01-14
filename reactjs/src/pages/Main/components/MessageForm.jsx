@@ -24,8 +24,9 @@ function MessageForm({room, onMessageSent}) {
 
         submitButtonRef.current.disabled = true
 
-        api.post(`/rooms/${room.id}/messages`, {
-            text
+        api.post(`/messages`, {
+            text,
+            room: room["@id"]
         }).then(response => {
             if (onMessageSent instanceof Function) {
                 onMessageSent(response.data)

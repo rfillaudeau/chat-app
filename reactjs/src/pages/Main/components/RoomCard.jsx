@@ -1,7 +1,34 @@
-import React from "react"
+import React, {useEffect, useState} from "react"
 import {Link} from "react-router-dom"
+import {useAuth} from "../../../contexts/AuthContext.jsx"
+import {CanceledError} from "axios"
 
 function RoomCard({room, isSelected, onSelect}) {
+    const {api} = useAuth()
+    const [lastMessage, setLastMessage] = useState(null)
+
+    useEffect(() => {
+        let controller = new AbortController()
+
+        api.get(`/rooms/${room.id}/messages/last`, {
+            signal: controller.signal
+        }).then(response => {
+            if (response.status === 204) {
+                return
+            }
+
+            setLastMessage(response.data)
+        }).catch(error => {
+            if (error instanceof CanceledError) {
+                return
+            }
+
+            console.error(error)
+        })
+
+        return () => controller.abort()
+    }, [])
+
     function handleSelect() {
         if (onSelect instanceof Function) {
             onSelect(room)
@@ -23,7 +50,7 @@ function RoomCard({room, isSelected, onSelect}) {
                 <div className="font-bold text-sm truncate">{room.name}</div>
                 <div className="flex text-xs text-zinc-400 space-x-2">
                     <div className="truncate grow">
-                        {room.lastMessage !== null ? room.lastMessage.text : "No message"}
+                        {lastMessage !== null ? lastMessage.text : "No message"}
                     </div>
                     <div className="shrink-0">5 min. ago</div>
                 </div>

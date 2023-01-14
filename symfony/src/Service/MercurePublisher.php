@@ -2,11 +2,13 @@
 
 namespace App\Service;
 
+use ApiPlatform\JsonLd\Serializer\ItemNormalizer;
 use App\Entity\Message;
 use App\Entity\Room;
+use App\Entity\User;
+use App\Entity\UserRoom;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -23,7 +25,14 @@ class MercurePublisher
     {
         $update = new Update(
             sprintf('rooms/%d', $message->getRoom()->getId()),
-            $this->serializer->serialize($message, JsonEncoder::FORMAT)
+            $this->serializer->serialize($message, ItemNormalizer::FORMAT, [
+                AbstractNormalizer::GROUPS => [
+                    Message::GROUP_READ,
+                    User::GROUP_READ,
+                    Room::GROUP_READ,
+                    UserRoom::GROUP_READ,
+                ]
+            ])
         );
 
         $this->hub->publish($update);
@@ -31,10 +40,11 @@ class MercurePublisher
 
     public function publishRoom(Room $room): void
     {
-        $serializedRoom = $this->serializer->serialize($room, JsonEncoder::FORMAT, [
+        $serializedRoom = $this->serializer->serialize($room, ItemNormalizer::FORMAT, [
             AbstractNormalizer::GROUPS => [
-                Room::GROUP_DEFAULT,
-                Room::GROUP_WITH_LAST_MESSAGE
+                Room::GROUP_READ,
+                UserRoom::GROUP_READ,
+                User::GROUP_READ,
             ]
         ]);
 

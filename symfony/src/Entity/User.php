@@ -27,17 +27,17 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(
             uriTemplate: '/users/{id}',
             requirements: ['id' => '\d+'],
+            name: 'app_get_user'
         ),
         new Get(
             uriTemplate: '/users/me',
             controller: GetCurrentUser::class,
             read: false,
-            name: 'me',
         ),
     ],
     normalizationContext: [
         AbstractNormalizer::GROUPS => [
-            self::GROUP_DEFAULT
+            self::GROUP_READ,
         ]
     ],
     security: 'is_granted("' . self::ROLE_USER . '")',
@@ -46,9 +46,14 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new Post(
             uriTemplate: '/auth/register',
+            normalizationContext: [
+                AbstractNormalizer::GROUPS => [
+                    self::GROUP_READ,
+                ]
+            ],
             denormalizationContext: [
                 AbstractNormalizer::GROUPS => [
-                    self::GROUP_CREATE
+                    self::GROUP_CREATE,
                 ]
             ],
             processor: UserPasswordProcessor::class,
@@ -62,24 +67,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const GROUP_DEFAULT = 'default';
     public const GROUP_CREATE = 'user:create';
+    public const GROUP_READ = 'user:read';
     public const ROLE_USER = 'ROLE_USER';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[Assert\NotBlank]
     #[Assert\Length(max: 180)]
     private ?string $email = null;
 
     #[ORM\Column(length: 30, unique: true)]
-    #[Groups([self::GROUP_DEFAULT, self::GROUP_CREATE])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 30)]
     private ?string $username = null;

@@ -19,7 +19,7 @@ function SelectUsersInput({onChange}) {
                 excludeCurrentUser: true
             }
         }).then(response => {
-            setUsers(response.data)
+            setUsers(response.data["hydra:member"])
         }).catch(error => {
             console.error(error)
         })

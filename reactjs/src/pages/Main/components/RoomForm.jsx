@@ -3,7 +3,7 @@ import {useAuth} from "../../../contexts/AuthContext.jsx"
 import SelectUsersInput from "./SelectUsersInput.jsx"
 
 function RoomForm() {
-    const {api} = useAuth()
+    const {currentUser, api} = useAuth()
     const [inputs, setInputs] = useState({
         name: "",
         users: []
@@ -53,11 +53,12 @@ function RoomForm() {
             return
         }
 
-        console.log(inputs)
+        let users = inputs.users.map(user => ({user: user["@id"]}))
+        users.push({user: currentUser["@id"]})
 
         api.post("/rooms", {
             name: inputs.name,
-            users: inputs.users.map(user => user.username)
+            users: users
         }).then(response => {
             console.log(response.data)
 

@@ -23,7 +23,7 @@ function SideBar() {
         api.get("/rooms", {
             signal: controller.signal
         }).then(response => {
-            setRooms(response.data)
+            setRooms(response.data["hydra:member"])
         }).catch(error => {
             if (error instanceof CanceledError) {
                 return

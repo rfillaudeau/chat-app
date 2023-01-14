@@ -23,7 +23,7 @@ function RoomContainer() {
         api.get(`/rooms/${currentRoom.id}/messages`, {
             signal: controller.signal
         }).then(response => {
-            setRawMessages(response.data)
+            setRawMessages(response.data["hydra:member"])
         }).catch(error => {
             if (error instanceof CanceledError) {
                 return

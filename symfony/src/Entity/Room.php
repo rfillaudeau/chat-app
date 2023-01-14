@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\RoomRepository;
 use App\Security\RoomVoter;
 use App\Validator as AppAssert;
@@ -24,14 +25,24 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: 'is_granted("' . RoomVoter::READ . '", object)'
         ),
         new Post(),
+        new Put(
+            security: 'is_granted("' . RoomVoter::UPDATE . '", object)'
+        ),
         new Delete(
             security: 'is_granted("' . RoomVoter::DELETE . '", object)'
         ),
     ],
     normalizationContext: [
         AbstractNormalizer::GROUPS => [
-            Room::GROUP_DEFAULT,
-            Room::GROUP_WITH_LAST_MESSAGE
+            Room::GROUP_READ,
+            UserRoom::GROUP_READ,
+            User::GROUP_READ,
+        ]
+    ],
+    denormalizationContext: [
+        AbstractNormalizer::GROUPS => [
+            Room::GROUP_CREATE,
+            UserRoom::GROUP_CREATE,
         ]
     ],
     security: 'is_granted("' . User::ROLE_USER . '")'
@@ -39,17 +50,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 class Room
 {
-    public const GROUP_DEFAULT = 'default';
-    public const GROUP_WITH_LAST_MESSAGE = 'room:with_last_message';
+    public const GROUP_CREATE = 'room:create';
+    public const GROUP_READ = 'room:read';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[Assert\NotBlank]
     private ?string $name = null;
 
@@ -59,11 +70,10 @@ class Room
     #[ORM\OneToMany(
         mappedBy: 'room',
         targetEntity: UserRoom::class,
-        cascade: ['persist'],
-//        fetch: 'EXTRA_LAZY',
+        cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
-    #[Groups([self::GROUP_DEFAULT])]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
     #[AppAssert\CurrentUserIsInArray]
     #[Assert\All([
         new Assert\NotBlank,
@@ -101,44 +111,51 @@ class Room
         return $this->users;
     }
 
-    public function addUser(UserRoom $newUserRoom): void
+    /**
+     * @param UserRoom[] $users
+     * @return self
+     */
+    public function setUsers(array $users): self
     {
-        foreach ($this->users as $userRoom) {
-            if ($userRoom->getUser() === $newUserRoom->getUser()) {
-                return;
+        // Filter duplicates
+        $newUsers = [];
+        foreach ($users as $userRoom) {
+            $isInNewUsers = false;
+            for ($i = 0; $i < count($newUsers); $i++) {
+                if ($userRoom->getUser() === $newUsers[$i]->getUser()) {
+                    $isInNewUsers = true;
+                    break;
+                }
+            }
+
+            if (!$isInNewUsers) {
+                $newUsers[] = $userRoom;
             }
         }
 
-        $newUserRoom->setRoom($this);
-        $this->users->add($newUserRoom);
-    }
+        $usersToRemove = $this->users->toArray();
+        foreach ($newUsers as $userRoom) {
+            $index = false;
+            for ($i = 0; $i < count($usersToRemove); $i++) {
+                if ($userRoom->getUser() === $usersToRemove[$i]->getUser()) {
+                    $index = $i;
+                    break;
+                }
+            }
 
-    public function removeUser(UserRoom $userRoom): void
-    {
-        $userIndex = -1;
-        for ($i = 0; $i < $this->users->count(); $i++) {
-            if ($this->users[$i]->getUser() === $userRoom->getUser()) {
-                $userIndex = $i;
-                break;
+            if ($index === false) {
+                $userRoom->setRoom($this);
+                $this->users->add($userRoom);
+            } else {
+                array_splice($usersToRemove, $index, 1);
             }
         }
 
-        if ($userIndex === -1) {
-            return;
+        foreach ($usersToRemove as $userRoom) {
+            $userRoom->setRoom(null);
+            $this->users->removeElement($userRoom);
         }
 
-        $this->users[$userIndex]->setRoom(null);
-        $this->users->remove($userIndex);
-    }
-
-    public function findUser(User $user): ?UserRoom
-    {
-        foreach ($this->users as $userRoom) {
-            if ($userRoom->getUser() === $user) {
-                return $userRoom;
-            }
-        }
-
-        return null;
+        return $this;
     }
 }
