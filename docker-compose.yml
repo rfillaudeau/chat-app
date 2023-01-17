@@ -9,34 +9,34 @@ services:
         environment:
             MYSQL_ROOT_PASSWORD: secret
             MYSQL_DATABASE: chat_app
-            MYSQL_USER: symfony
-            MYSQL_PASSWORD: symfony
+            MYSQL_USER: backend
+            MYSQL_PASSWORD: backend
         ports:
             - '3306:3306'
         volumes:
             - ./docker/mysql:/var/lib/mysql
 
-    php:
-        container_name: php
+    backend:
+        container_name: backend
         build:
-            context: ./docker/php
+            context: backend
         ports:
             - '9000:9000'
         volumes:
-            - ./symfony:/var/www/symfony
+            - ./backend:/var/www/backend
+            - /var/www/backend/vendor/
         depends_on:
             - database
 
-    node:
-        container_name: node
-        #        image: node:19.3-alpine
+    frontend:
+        container_name: frontend
         build:
-            context: ./
-            dockerfile: ./docker/node/Dockerfile
+            context: frontend
         ports:
-            - '5173:5173'
+            - "5173:5173"
         volumes:
-            - ./reactjs:/app
+            - ./frontend:/usr/src/app
+            - /usr/src/app/node_modules
 
     nginx:
         container_name: nginx
@@ -45,11 +45,10 @@ services:
             - '80:80'
             - '8080:8080'
         volumes:
-            - ./reactjs:/app
-            - ./symfony:/var/www/symfony
+            - ./backend:/var/www/backend
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
         depends_on:
-            - php
+            - backend
             - database
 
     mercure:
@@ -72,6 +71,6 @@ services:
             - mercure_config:/config
 
 volumes:
-    ###> symfony/mercure-bundle ###
+    ###> backend/mercure-bundle ###
     mercure_data:
-    mercure_config: ###< symfony/mercure-bundle ###
+    mercure_config: ###< backend/mercure-bundle ###
