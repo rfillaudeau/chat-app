@@ -102,22 +102,6 @@ function Login() {
                         />
                     </div>
 
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 rounded bg-zinc-600 border border-transparent text-zinc-600 focus:ring-zinc-500 focus:ring-0 focus:outline-none"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm">Remember me</label>
-                        </div>
-
-                        <div className="text-sm">
-                            <a href="#" className="text-zinc-200 hover:text-zinc-100">Forgot your password?</a>
-                        </div>
-                    </div>
-
                     {error !== null && (
                         <div className="p-4 bg-red-800 rounded-md">{error}</div>
                     )}

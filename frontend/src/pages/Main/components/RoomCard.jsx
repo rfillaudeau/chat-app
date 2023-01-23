@@ -38,22 +38,15 @@ function RoomCard({room, isSelected, onSelect}) {
     return (
         <Link
             to={`/room/${room.id}`}
-            className={`block flex items-center rounded-2xl hover:bg-zinc-700 px-4 py-3${isSelected ? " bg-zinc-700" : ""}`}
+            className={`block rounded-2xl hover:bg-zinc-700 min-w-0 px-4 py-3${isSelected ? " bg-zinc-700" : ""}`}
             onClick={handleSelect}
         >
-            <img
-                src="https://picsum.photos/id/13/200/200"
-                alt="..."
-                className="mr-4 h-10 w-10 rounded-xl"
-            />
-            <div className="grow min-w-0">
-                <div className="font-bold text-sm truncate">{room.name}</div>
-                <div className="flex text-xs text-zinc-400 space-x-2">
-                    <div className="truncate grow">
-                        {lastMessage !== null ? lastMessage.text : "No message"}
-                    </div>
-                    <div className="shrink-0">5 min. ago</div>
+            <div className="font-bold text-sm truncate">{room.name}</div>
+            <div className="flex text-xs text-zinc-400 space-x-2">
+                <div className="truncate grow">
+                    {lastMessage !== null ? lastMessage.text : "No message"}
                 </div>
+                <div className="shrink-0">5 min. ago</div>
             </div>
         </Link>
     )

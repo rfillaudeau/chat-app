@@ -1,17 +1,21 @@
 import React, {useEffect, useState} from "react"
 import {CanceledError} from "axios"
 import CurrentUserCard from "./CurrentUserCard.jsx"
-import RoomFormModal from "../../../components/RoomFormModal.jsx"
+import Modal from "../../../components/ui/Modal.jsx"
 import RoomCard from "./RoomCard.jsx"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
 import {useRoom} from "../contexts/RoomContext.jsx"
 import useMercure from "../../../hooks/useMercure.jsx"
+import RoomForm from "./RoomForm.jsx"
+import {useNavigate} from "react-router-dom"
 
 function SideBar() {
     const {currentUser, api, isLoading} = useAuth()
     const {currentRoom, setCurrentRoom, rooms, setRooms} = useRoom()
     const [roomsToDisplay, setRoomsToDisplay] = useState([])
     const [searchRoom, setSearchRoom] = useState("")
+    const [showNewRoomModal, setShowNewRoomModal] = useState(false)
+    const navigate = useNavigate()
 
     useEffect(() => {
         if (isLoading) {
@@ -58,6 +62,19 @@ function SideBar() {
     }, [rooms, searchRoom])
 
     useMercure(`users/${currentUser.id}/rooms`, room => {
+        addRoom(room)
+    })
+
+    function handleRoomCreation(room) {
+        setShowNewRoomModal(false)
+
+        addRoom(room)
+
+        setCurrentRoom(room)
+        navigate(`/room/${room.id}`)
+    }
+
+    function addRoom(room) {
         setRooms(prevRooms => {
             let newRooms = [...prevRooms]
             if (newRooms.find(r => r.id === room.id) == null) {
@@ -66,7 +83,7 @@ function SideBar() {
 
             return newRooms
         })
-    })
+    }
 
     const roomElements = roomsToDisplay.map((room, index) => (
         <RoomCard
@@ -84,7 +101,26 @@ function SideBar() {
             <div className="flex items-center">
                 <div className="grow text-lg font-bold">Rooms</div>
 
-                <RoomFormModal/>
+                <div>
+                    <button
+                        type="button"
+                        className="text-center rounded-md bg-zinc-600 px-2 py-2 text-xs hover:bg-zinc-500"
+                        onClick={() => setShowNewRoomModal(true)}
+                    >
+                        <i className="bi bi-plus-lg"></i> New room
+                    </button>
+
+                    <Modal
+                        title="Create a new room"
+                        isOpen={showNewRoomModal}
+                        onClickOutside={() => setShowNewRoomModal(false)}
+                        onClickClose={() => setShowNewRoomModal(false)}
+                    >
+                        <RoomForm
+                            onSuccess={handleRoomCreation}
+                        />
+                    </Modal>
+                </div>
             </div>
 
             <input

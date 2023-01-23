@@ -13,9 +13,14 @@ function SelectUsersInput({onChange}) {
     }, [selectedUsers])
 
     function searchUsers(event) {
+        const query = event.target.value
+        if (query.length === 0) {
+            return
+        }
+
         api.get("/users", {
             params: {
-                usernameOrEmail: event.target.value,
+                usernameOrEmail: query,
                 excludeCurrentUser: true
             }
         }).then(response => {

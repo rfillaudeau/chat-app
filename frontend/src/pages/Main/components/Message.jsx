@@ -42,11 +42,9 @@ function Message({message}) {
 
     return (
         <div className="flex px-0 py-3 space-x-4">
-            <img
-                src="https://picsum.photos/id/13/200/200"
-                alt="..."
-                className="h-8 w-8 rounded-xl"
-            />
+            <div className="bg-zinc-400 h-8 w-8 rounded-xl text-zinc-800 flex items-center justify-center font-bold">
+                {message.user.username[0].toUpperCase()}
+            </div>
             <div className="grow space-y-2 min-w-0 flex flex-col">
                 <div className="space-x-2 flex items-center">
                     <div className="text-sm font-bold text-gray-200 truncate">

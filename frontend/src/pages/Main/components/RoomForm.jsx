@@ -2,7 +2,7 @@ import React, {useRef, useState} from "react"
 import {useAuth} from "../../../contexts/AuthContext.jsx"
 import SelectUsersInput from "./SelectUsersInput.jsx"
 
-function RoomForm() {
+function RoomForm({onSuccess}) {
     const {currentUser, api} = useAuth()
     const [inputs, setInputs] = useState({
         name: "",
@@ -60,10 +60,9 @@ function RoomForm() {
             name: inputs.name,
             users: users
         }).then(response => {
-            console.log(response.data)
-
-            // TODO: Empty and close the modal, then add the new room
-            // to the list and switch to it
+            if (onSuccess instanceof Function) {
+                onSuccess(response.data)
+            }
         }).catch(error => {
             console.error(error)
 

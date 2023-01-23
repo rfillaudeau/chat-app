@@ -1,10 +1,9 @@
 import React, {useEffect, useRef, useState} from "react"
 import {Link, useNavigate} from "react-router-dom"
-import axios from "axios"
 import {useAuth} from "../contexts/AuthContext.jsx"
 
 function Register() {
-    const {currentUser} = useAuth()
+    const {currentUser, api} = useAuth()
     const [inputs, setInputs] = useState({
         email: "",
         username: "",
@@ -53,22 +52,17 @@ function Register() {
 
         console.log(inputs)
 
-        axios.post("/api/register", {
+        api.post("/auth/register", {
             email: inputs.email,
             username: inputs.username,
-            password: inputs.password
-        }, {
-            baseURL: "http://localhost:8080"
+            plainPassword: inputs.password
+        }).then(() => {
+            navigate("/login")
+        }).catch(response => {
+            console.error(response)
+        }).finally(() => {
+            submitButtonRef.current.disabled = false
         })
-            .then(response => {
-                console.log(response.data)
-
-                navigate("/login")
-            })
-            .catch(response => console.error(response))
-            .finally(() => {
-                submitButtonRef.current.disabled = false
-            })
     }
 
     return (

@@ -86,8 +86,11 @@ function RoomContainer() {
     return (
         <div className="flex w-3/4 flex-col px-6 py-4 bg-zinc-900">
             <div className="flex items-center rounded-t-2xl mb-4">
-                <div className="grow text-lg font-bold">
-                    My Awesome room
+                <div className="grow">
+                    <div className="text-lg font-bold">{currentRoom.name}</div>
+                    <div className="text-sm">
+                        <b>Users:</b> {currentRoom.users.map(userRoom => userRoom.user.username).join(", ")}
+                    </div>
                 </div>
                 <button type="button"
                         className="text-center rounded-md bg-zinc-600 px-2 py-2 text-xs hover:bg-zinc-500">

@@ -80,10 +80,7 @@ export function AuthContextProvider({children}) {
         api.get("/users/me", {
             signal: controller.signal
         }).then(response => {
-            const userObject = response.data
-
-            setUser(userObject)
-            storage.saveObject(USER_KEY, userObject)
+            saveUser(response.data)
         }).catch(error => {
             if (error instanceof CanceledError) {
                 return
@@ -148,6 +145,11 @@ export function AuthContextProvider({children}) {
         setRefreshTokenExpiryDate(refreshTokenExpiry)
     }
 
+    function saveUser(userObject) {
+        setUser(userObject)
+        storage.saveObject(USER_KEY, userObject)
+    }
+
     function logout() {
         // TODO: Send a request to revoke the current accessToken and refreshToken
 
@@ -168,6 +170,7 @@ export function AuthContextProvider({children}) {
     return (
         <AuthContext.Provider value={{
             currentUser: user,
+            saveCurrentUser: saveUser,
             isAuthenticated: user != null,
             login,
             logout,

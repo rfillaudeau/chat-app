@@ -7,10 +7,12 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Controller\User\GetCurrentUser;
 use App\Filter\ExcludeCurrentUserFilter;
 use App\Filter\OrFilter;
 use App\Repository\UserRepository;
+use App\Security\UserVoter;
 use App\State\UserPasswordProcessor;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -28,6 +30,14 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/users/{id}',
             requirements: ['id' => '\d+'],
             name: 'app_get_user'
+        ),
+        new Put(
+            denormalizationContext: [
+                AbstractNormalizer::GROUPS => [
+                    self::GROUP_UPDATE,
+                ]
+            ],
+            security: 'is_granted("' . UserVoter::UPDATE . '", object)',
         ),
         new Get(
             uriTemplate: '/users/me',
@@ -69,6 +79,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     public const GROUP_CREATE = 'user:create';
     public const GROUP_READ = 'user:read';
+
+    public const GROUP_UPDATE = 'user:update';
     public const ROLE_USER = 'ROLE_USER';
 
     #[ORM\Id]
@@ -78,15 +90,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 180)]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE, self::GROUP_UPDATE])]
+    #[Assert\NotBlank(groups: [self::GROUP_CREATE, self::GROUP_UPDATE])]
+    #[Assert\Length(max: 180, groups: [self::GROUP_CREATE, self::GROUP_UPDATE])]
     private ?string $email = null;
 
     #[ORM\Column(length: 30, unique: true)]
-    #[Groups([self::GROUP_READ, self::GROUP_CREATE])]
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 2, max: 30)]
+    #[Groups([self::GROUP_READ, self::GROUP_CREATE, self::GROUP_UPDATE])]
+    #[Assert\NotBlank(groups: [self::GROUP_CREATE, self::GROUP_UPDATE])]
+    #[Assert\Length(min: 2, max: 30, groups: [self::GROUP_CREATE, self::GROUP_UPDATE])]
     private ?string $username = null;
 
     #[ORM\Column]
@@ -97,8 +109,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Ignore]
     private ?string $password = null;
 
-    #[Assert\NotBlank]
-    #[Assert\Length(min: 6)]
+    #[Assert\NotBlank(groups: [self::GROUP_CREATE])]
+    #[Assert\Length(min: 6, groups: [self::GROUP_CREATE])]
     #[Groups([self::GROUP_CREATE])]
     private ?string $plainPassword = null;
 

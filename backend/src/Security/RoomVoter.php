@@ -34,8 +34,7 @@ class RoomVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
     {
         $user = $token->getUser();
-
-        if (!$user instanceof User) {
+        if (!($user instanceof User)) {
             // the user must be logged in; if not, deny access
             return false;
         }
